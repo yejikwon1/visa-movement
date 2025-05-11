@@ -6,6 +6,7 @@ import re # Import regular expression module
 import argparse # Import argparse for command-line arguments
 import datetime
 
+
 def convert_date_format(date_str):
     if date_str in {"C", "U", ""}:
         return date_str
