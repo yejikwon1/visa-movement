@@ -1,0 +1,224 @@
+{
+  "final_action_dates": {
+    "family": {
+      "F1": {
+        "AllChargeabilityAreasExceptThoseListed": "08JUL15",
+        "CHINA": "08JUL15",
+        "INDIA": "08JUL15",
+        "MEXICO": "15OCT01",
+        "PHILIPPINES": "01MAR12"
+      },
+      "F2A": {
+        "AllChargeabilityAreasExceptThoseListed": "01JUN21",
+        "CHINA": "01JUN21",
+        "INDIA": "01JUN21",
+        "MEXICO": "08NOV20",
+        "PHILIPPINES": "01JUN21"
+      },
+      "F2B": {
+        "AllChargeabilityAreasExceptThoseListed": "01APR16",
+        "CHINA": "01APR16",
+        "INDIA": "01APR16",
+        "MEXICO": "01MAR04",
+        "PHILIPPINES": "22OCT11"
+      },
+      "F3": {
+        "AllChargeabilityAreasExceptThoseListed": "01JAN10",
+        "CHINA": "01JAN10",
+        "INDIA": "01JAN10",
+        "MEXICO": "22JUL99",
+        "PHILIPPINES": "01AUG02"
+      },
+      "F4": {
+        "AllChargeabilityAreasExceptThoseListed": "22JUL07",
+        "CHINA": "22JUL07",
+        "INDIA": "15JAN06",
+        "MEXICO": "22JAN01",
+        "PHILIPPINES": "08SEP03"
+      }
+    },
+    "employment": {
+      "1st": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "01SEP22",
+        "INDIA": "01MAR21",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "2nd": {
+        "AllChargeabilityAreasExceptThoseListed": "15JAN23",
+        "CHINA-mainlandborn": "01FEB20",
+        "INDIA": "15APR12",
+        "MEXICO": "15JAN23",
+        "PHILIPPINES": "15JAN23"
+      },
+      "3rd": {
+        "AllChargeabilityAreasExceptThoseListed": "22NOV22",
+        "CHINA-mainlandborn": "01SEP20",
+        "INDIA": "15AUG12",
+        "MEXICO": "22NOV22",
+        "PHILIPPINES": "22NOV22"
+      },
+      "Other Workers": {
+        "AllChargeabilityAreasExceptThoseListed": "08OCT20",
+        "CHINA-mainlandborn": "01JAN17",
+        "INDIA": "15AUG12",
+        "MEXICO": "08OCT20",
+        "PHILIPPINES": "01MAY20"
+      },
+      "4th": {
+        "AllChargeabilityAreasExceptThoseListed": "01NOV20",
+        "CHINA-mainlandborn": "01NOV20",
+        "INDIA": "01NOV20",
+        "MEXICO": "01NOV20",
+        "PHILIPPINES": "01NOV20"
+      },
+      "Certain Religious Workers": {
+        "AllChargeabilityAreasExceptThoseListed": "01NOV20",
+        "CHINA-mainlandborn": "01NOV20",
+        "INDIA": "01NOV20",
+        "MEXICO": "01NOV20",
+        "PHILIPPINES": "01NOV20"
+      },
+      "5th Unreserved (including C5, T5, I5, R5)": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "15DEC15",
+        "INDIA": "01DEC20",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "5th Set Aside: Rural (20%)": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "5th Set Aside: High Unemployment (10%)": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "5th Set Aside: Infrastructure (2%)": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      }
+    }
+  },
+  "dates_for_filing": {
+    "family": {
+      "F1": {
+        "AllChargeabilityAreasExceptThoseListed": "01SEP17",
+        "CHINA-mainlandborn": "01SEP17",
+        "INDIA": "01SEP17",
+        "MEXICO": "01APR05",
+        "PHILIPPINES": "22APR15"
+      },
+      "F2A": {
+        "AllChargeabilityAreasExceptThoseListed": "01SEP23",
+        "CHINA-mainlandborn": "01SEP23",
+        "INDIA": "01SEP23",
+        "MEXICO": "01SEP23",
+        "PHILIPPINES": "01SEP23"
+      },
+      "F2B": {
+        "AllChargeabilityAreasExceptThoseListed": "01JAN17",
+        "CHINA-mainlandborn": "01JAN17",
+        "INDIA": "01JAN17",
+        "MEXICO": "01SEP04",
+        "PHILIPPINES": "01OCT13"
+      },
+      "F3": {
+        "AllChargeabilityAreasExceptThoseListed": "01JUN10",
+        "CHINA-mainlandborn": "01JUN10",
+        "INDIA": "01JUN10",
+        "MEXICO": "15JUN01",
+        "PHILIPPINES": "08NOV03"
+      },
+      "F4": {
+        "AllChargeabilityAreasExceptThoseListed": "01MAR08",
+        "CHINA-mainlandborn": "01MAR08",
+        "INDIA": "15JUN06",
+        "MEXICO": "22APR01",
+        "PHILIPPINES": "01JUN05"
+      }
+    },
+    "employment": {
+      "1st": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "01JAN23",
+        "INDIA": "01APR21",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "2nd": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "15FEB23",
+        "CHINA-mainlandborn": "01JUN20",
+        "INDIA": "15MAY12",
+        "MEXICO": "15FEB23",
+        "PHILIPPINES": "15FEB23"
+      },
+      "3rd": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "01FEB23",
+        "CHINA-mainlandborn": "01JUL21",
+        "INDIA": "15SEP12",
+        "MEXICO": "01FEB23",
+        "PHILIPPINES": "01JAN23"
+      },
+      "Other Workers": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "15DEC20",
+        "CHINA-mainlandborn": "01JUN17",
+        "INDIA": "15SEP12",
+        "MEXICO": "15DEC20",
+        "PHILIPPINES": "15MAY20"
+      },
+      "4th": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "01DEC20",
+        "CHINA-mainlandborn": "01DEC20",
+        "INDIA": "01DEC20",
+        "MEXICO": "01DEC20",
+        "PHILIPPINES": "01DEC20"
+      },
+      "Certain Religious Workers": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "01DEC20",
+        "CHINA-mainlandborn": "01DEC20",
+        "INDIA": "01DEC20",
+        "MEXICO": "01DEC20",
+        "PHILIPPINES": "01DEC20"
+      },
+      "5th Unreserved (including C5, T5, I5, R5)": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "01JAN17",
+        "INDIA": "01APR22",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "5th Set Aside: (Rural - 20%)": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "5th Set Aside: (High Unemployment - 10%)": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "5th Set Aside: (Infrastructure - 2%)": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      }
+    }
+  }
+}
