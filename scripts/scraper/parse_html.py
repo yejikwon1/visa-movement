@@ -34,6 +34,8 @@ def parse_visa_bulletin(html_path):
     Args:
         html_path (str): The path to the saved HTML file.
 
+        
+        
     Returns:
         dict: A dictionary containing the extracted visa bulletin data,
               or None if parsing fails.
