@@ -1,5 +1,3 @@
-# scripts/scraper/update_dol.py
-
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -38,6 +36,7 @@ def extract_analyst_review_days(soup):
 
 def upload_to_jsonbin(data):
     try:
+        print("📤 업로드할 데이터:\n", json.dumps(data, indent=2))  # ✅ 업로드 전 출력
         res = requests.put(JSONBIN_URL, headers=HEADERS, json={"record": data})
         res.raise_for_status()
         print("✅ JSONBin 업로드 성공!")
