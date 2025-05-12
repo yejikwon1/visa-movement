@@ -1,0 +1,27 @@
+name: Update DOL Processing Time
+
+on:
+  schedule:
+    - cron: '0 13 8 * *'  # 매달 8일 13:00 UTC
+  workflow_dispatch:      # 수동 실행 허용
+
+jobs:
+  run-update-dol:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/requirements.txt
+
+      - name: Run update_dol.py
+        run: python scripts/scraper/update_dol.py
