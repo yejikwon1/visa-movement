@@ -13,6 +13,7 @@ import {
   Card,
   CardContent,
   SelectChangeEvent,
+  CssBaseline,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -57,6 +58,8 @@ const chargeabilityAreas = [
   { value: 'PHILIPPINES', label: 'Philippines' },
 ];
 
+const normalizeKey = (key: string) => key.replace(/\s+/g, '');
+
 const App = () => {
   const [visaType, setVisaType] = useState<'family' | 'employment'>('employment');
   const [category, setCategory] = useState('3rd');
@@ -75,175 +78,155 @@ const App = () => {
       setLoading(true);
       setError(null);
       try {
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth(); // 0-indexed (0 for January, 11 for December)
-        const monthName = now.toLocaleDateString('en-US', { month: 'long' }).toLowerCase();
+        const BIN_ID = "682129658561e97a50120314";
+        const API_KEY = "$2a$10$chnGp34LEzygcMi0MZX3Lez0oi8NoWGnrfskj9TjdapYXh8nou2sC";
+        
+        console.log('Fetching data from JSONBin.io...');
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          headers: {
+            "X-Master-Key": API_KEY,
+            "Content-Type": "application/json"
+          }
+        });
 
-        // Fiscal year for US government runs from October to September.
-        // e.g., October 2023 to September 2024 is FY2024.
-        let fiscalYear = currentYear;
-        if (currentMonth >= 9) { // 9 is October (0-indexed)
-          fiscalYear = currentYear + 1;
-        }
-
-        // The filename uses the calendar year, e.g., july-2024.json
-        const fileName = `${monthName}-${currentYear}.json`;
-        const filePath = `/parsed_json/FY${fiscalYear}/${fileName}`;
-
-        // const response = await fetch('/parsed_json/FY2024/september-2024.json');
-        const response = await fetch(filePath);
         if (!response.ok) {
-          // Fallback mechanism: Try to fetch the previous month's data if current is not found
-          let fallbackResponse;
-          let fallbackFilePath;
-
-          const prevMonthDate = new Date(now);
-          prevMonthDate.setMonth(currentMonth - 1);
-          
-          const prevMonthYear = prevMonthDate.getFullYear();
-          const prevMonthIndex = prevMonthDate.getMonth();
-          const prevMonthName = prevMonthDate.toLocaleDateString('en-US', { month: 'long' }).toLowerCase();
-
-          let prevFiscalYear = prevMonthYear;
-          if (prevMonthIndex >= 9) {
-            prevFiscalYear = prevMonthYear + 1;
-          }
-          
-          const prevFileName = `${prevMonthName}-${prevMonthYear}.json`;
-          fallbackFilePath = `/parsed_json/FY${prevFiscalYear}/${prevFileName}`;
-          
-          try {
-            fallbackResponse = await fetch(fallbackFilePath);
-            if (!fallbackResponse.ok) {
-              throw new Error(`HTTP error! Status: ${response.status} for ${filePath} and ${fallbackResponse.status} for ${fallbackFilePath}`);
-            }
-            const data: VisaBulletinData = await fallbackResponse.json();
-            setBulletinData(data);
-            setError(`Could not find data for the current month (${filePath}). Displaying data for ${prevMonthName} ${prevMonthYear}.`);
-          } catch (fallbackErr) {
-             console.error("Fallback fetch error:", fallbackErr);
-             throw new Error(`HTTP error! Status: ${response.status} for ${filePath}. Fallback to ${fallbackFilePath} also failed.`);
-          }
-        } else {
-          const data: VisaBulletinData = await response.json();
-          setBulletinData(data);
+          const errorText = await response.text();
+          console.error('JSONBin.io API Error:', {
+            status: response.status,
+            statusText: response.statusText,
+            errorText
+          });
+          throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
         }
+
+        const result = await response.json();
+        console.log('Received data from JSONBin.io:', result);
+        
+        if (!result.record) {
+          console.error('Invalid data format:', result);
+          throw new Error('Invalid data format received from JSONBin.io');
+        }
+        
+        const data: VisaBulletinData = result.record;
+        console.log('Parsed visa bulletin data:', data);
+        setBulletinData(data);
       } catch (err: any) {
-        console.error("Error in loadVisaBulletinData:", err);
-        setError(err.message || 'Failed to load visa bulletin data. Please try again later.');
+        console.error("Error loading visa bulletin data:", err);
+        setError(err.message || 'Error fetching data from JSONBin.io');
       } finally {
         setLoading(false);
       }
     };
+
     loadVisaBulletinData();
   }, []);
 
-  const getChargeabilityKey = (
-    area: string,
-    type: 'final_action_dates' | 'dates_for_filing',
-    visaType: 'family' | 'employment'
-  ) => {
-    // For employment, China is 'CHINA-mainlandborn', for family it's 'CHINA'
-    if (area === 'CHINA-mainlandborn' && visaType === 'family') return 'CHINA';
-    if (area === 'CHINA' && visaType === 'employment') return 'CHINA-mainlandborn';
-    // For AllChargeability, handle both normal and non-breaking space
-    if (type === 'dates_for_filing') {
-      if (area === 'AllChargeabilityAreasExceptThoseListed') {
-        return [
-          'AllChargeabilityAreasExceptThoseListed',
-          'AllChargeabilityAreas\u00a0ExceptThoseListed',
-          'AllChargeabilityAreas ExceptThoseListed', // actual non-breaking space
-        ];
-      }
-    }
-    return [area];
-  };
-
   const handleCheckStatus = () => {
     if (!bulletinData || !category || !chargeabilityArea || !priorityDate) {
-      setResults(null);
       setError('Please fill out all fields.');
+      setResults(null);
       return;
     }
     setError(null);
-    // Final Action Dates
-    let finalAction: { status: boolean; cutoff: string } | null = null;
-    let filing: { status: boolean; cutoff: string } | null = null;
+    setResults(null);
+
     try {
-      const faKeys = getChargeabilityKey(chargeabilityArea, 'final_action_dates', visaType);
-      let faCutoff = null;
-      for (const key of faKeys) {
-        faCutoff = bulletinData.final_action_dates[visaType][category][key];
-        if (faCutoff) break;
+      const normArea = normalizeKey(chargeabilityArea);
+
+      let finalAction = null;
+      let filing = null;
+      const faCategoryData = bulletinData.final_action_dates?.[visaType]?.[category];
+      const filingCategoryData = bulletinData.dates_for_filing?.[visaType]?.[category];
+
+      if (faCategoryData && faCategoryData[normArea]) {
+        const faCutoff = faCategoryData[normArea];
+        if (faCutoff === 'C') finalAction = { status: true, cutoff: 'Current' };
+        else if (faCutoff === 'U') finalAction = { status: false, cutoff: 'Unavailable' };
+        else if (faCutoff) {
+          const faDate = parse(faCutoff, 'ddMMMyy', new Date());
+          finalAction = { status: priorityDate <= faDate, cutoff: faCutoff };
+        }
       }
-      if (faCutoff === 'C') {
-        finalAction = { status: true, cutoff: 'Current' };
-      } else if (faCutoff) {
-        const faDate = parse(faCutoff, 'ddMMMyy', new Date());
-        finalAction = { status: priorityDate <= faDate, cutoff: faCutoff };
+
+      if (filingCategoryData && filingCategoryData[normArea]) {
+        const filingCutoff = filingCategoryData[normArea];
+        if (filingCutoff === 'C') filing = { status: true, cutoff: 'Current' };
+        else if (filingCutoff === 'U') filing = { status: false, cutoff: 'Unavailable' };
+        else if (filingCutoff) {
+          const filingDate = parse(filingCutoff, 'ddMMMyy', new Date());
+          filing = { status: priorityDate <= filingDate, cutoff: filingCutoff };
+        }
       }
-    } catch {
-      finalAction = null;
+
+      if (!finalAction && !filing) {
+        setError(`No data for selected criteria: ${visaType}/${category}/${chargeabilityArea}.`);
+      }
+      setResults({ finalAction, filing });
+
+    } catch (e: any) {
+      console.error("Error processing dates:", e);
+      setError(`Error processing dates for selected category.`);
+      setResults(null);
     }
-    // Dates for Filing
-    try {
-      const filingKeys = getChargeabilityKey(chargeabilityArea, 'dates_for_filing', visaType);
-      let filingCutoff = null;
-      for (const key of filingKeys) {
-        filingCutoff = bulletinData.dates_for_filing[visaType][category][key];
-        if (filingCutoff) break;
-      }
-      if (filingCutoff === 'C') {
-        filing = { status: true, cutoff: 'Current' };
-      } else if (filingCutoff) {
-        const filingDate = parse(filingCutoff, 'ddMMMyy', new Date());
-        filing = { status: priorityDate <= filingDate, cutoff: filingCutoff };
-      }
-    } catch {
-      filing = null;
-    }
-    setResults({ finalAction, filing });
   };
+
+  useEffect(() => {
+    if (categoriesMap[visaType] && categoriesMap[visaType].length > 0) {
+      setCategory(categoriesMap[visaType][0].value);
+    } else {
+      setCategory('');
+    }
+    setResults(null);
+    setError(null);
+  }, [visaType]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ minHeight: '100vh', bgcolor: '#f7fcfa', py: 6 }}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100vh', py: { xs: 3, sm: 6 } }}>
         <Container maxWidth="sm">
-          <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3 }}>
-            <Typography variant="h4" align="center" fontWeight={600} gutterBottom>
-              Visa Bulletin Priority Date Checker
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}>
+          <Typography 
+            variant="h4" 
+            align="center" 
+            fontWeight={600} 
+            gutterBottom 
+            sx={{ mb: 2 }}
+          >
+            Visa Bulletin Priority Date Checker
+          </Typography>
+
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 3, width: '100%' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               <FormControl fullWidth>
-                <InputLabel>Visa Type</InputLabel>
+                <InputLabel id="visa-type-label">Visa Type</InputLabel>
                 <Select
+                  labelId="visa-type-label"
                   value={visaType}
                   label="Visa Type"
-                  onChange={(e: SelectChangeEvent) => {
-                    setVisaType(e.target.value as 'family' | 'employment');
-                    setCategory(categoriesMap[e.target.value as 'family' | 'employment'][0].value);
-                  }}
+                  onChange={(e: SelectChangeEvent) => setVisaType(e.target.value as 'family' | 'employment')}
                 >
                   <MenuItem value="family">Family-Based</MenuItem>
                   <MenuItem value="employment">Employment-Based</MenuItem>
                 </Select>
               </FormControl>
               <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
+                <InputLabel id="category-label">Category</InputLabel>
                 <Select
+                  labelId="category-label"
                   value={category}
                   label="Category"
                   onChange={(e: SelectChangeEvent) => setCategory(e.target.value)}
+                  disabled={!categoriesMap[visaType] || categoriesMap[visaType].length === 0}
                 >
-                  {categoriesMap[visaType].map((cat) => (
+                  {categoriesMap[visaType] && categoriesMap[visaType].map((cat) => (
                     <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
               <FormControl fullWidth>
-                <InputLabel>Country of Chargeability</InputLabel>
+                <InputLabel id="chargeability-area-label">Country of Chargeability</InputLabel>
                 <Select
+                  labelId="chargeability-area-label"
                   value={chargeabilityArea}
                   label="Country of Chargeability"
                   onChange={(e: SelectChangeEvent) => setChargeabilityArea(e.target.value)}
@@ -253,67 +236,60 @@ const App = () => {
                   ))}
                 </Select>
               </FormControl>
-              <DatePicker
-                label="Priority Date (MM/DD/YYYY)"
-                value={priorityDate}
-                onChange={(newValue: Date | null) => setPriorityDate(newValue)}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
+              <Box>
+                <DatePicker
+                  label="Priority Date (MM/DD/YYYY)"
+                  value={priorityDate}
+                  onChange={(newValue) => {
+                    setPriorityDate(newValue);
+                    setResults(null);
+                  }}
+                  slotProps={{ textField: { fullWidth: true, helperText: "Select your priority date" } }}
+                />
+              </Box>
               <Button
                 variant="contained"
                 size="large"
-                sx={{ mt: 2, fontWeight: 600, bgcolor: '#1976d2' }}
+                sx={{ fontWeight: 600, bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' } }}
                 onClick={handleCheckStatus}
-                disabled={loading}
+                disabled={loading || !priorityDate}
               >
-                Check Status
+                {loading ? 'Loading Data...' : 'Check Status'}
               </Button>
-              {error && <Alert severity="error">{error}</Alert>}
+              {error && !loading && <Alert severity="warning" sx={{ mt: 2 }}>{error}</Alert>}
             </Box>
           </Paper>
+
           {results && (
-            <Card elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+            <Card elevation={1} sx={{ borderRadius: 3, p: { xs: 1.5, sm: 2 }, mt: 3, width: '100%' }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} gutterBottom>Results</Typography>
-                <Box sx={{ mb: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={500}>Final Action Dates:</Typography>
-                  {results.finalAction ? (
-                    results.finalAction.status ? (
-                      <Typography color="success.main" fontWeight={600}>
-                        ✓ Current{results.finalAction.cutoff !== 'Current' && ` (${results.finalAction.cutoff})`}
-                      </Typography>
-                    ) : (
-                      <Typography color="error.main" fontWeight={600}>
-                        ✗ Not Current ({results.finalAction.cutoff})
-                      </Typography>
-                    )
-                  ) : (
-                    <Typography color="text.secondary">N/A</Typography>
-                  )}
-                </Box>
-                <Box>
-                  <Typography variant="subtitle1" fontWeight={500}>Dates for Filing:</Typography>
-                  {results.filing ? (
-                    results.filing.status ? (
-                      <Typography color="success.main" fontWeight={600}>
-                        ✓ Current{results.filing.cutoff !== 'Current' && ` (${results.filing.cutoff})`}
-                      </Typography>
-                    ) : (
-                      <Typography color="error.main" fontWeight={600}>
-                        ✗ Not Current ({results.filing.cutoff})
-                      </Typography>
-                    )
-                  ) : (
-                    <Typography color="text.secondary">N/A</Typography>
-                  )}
-                </Box>
+                <Typography variant="subtitle1" fontWeight={500}>Final Action Dates:</Typography>
+                {results.finalAction ? (
+                  results.finalAction.cutoff === 'Current' ? <Typography color="success.main" fontWeight={600}>✓ Current</Typography>
+                  : results.finalAction.cutoff === 'Unavailable' ? <Typography color="warning.dark" fontWeight={600}>⚠ Unavailable</Typography>
+                  : results.finalAction.status ? <Typography color="success.main" fontWeight={600}>✓ Current ({results.finalAction.cutoff})</Typography>
+                  : <Typography color="error.main" fontWeight={600}>✗ Not Current ({results.finalAction.cutoff})</Typography>
+                ) : <Typography color="text.secondary">N/A</Typography>}
+                <Typography variant="subtitle1" fontWeight={500} sx={{ mt: 2 }}>Dates for Filing:</Typography>
+                {results.filing ? (
+                  results.filing.cutoff === 'Current' ? <Typography color="success.main" fontWeight={600}>✓ Current</Typography>
+                  : results.filing.cutoff === 'Unavailable' ? <Typography color="warning.dark" fontWeight={600}>⚠ Unavailable</Typography>
+                  : results.filing.status ? <Typography color="success.main" fontWeight={600}>✓ Current ({results.filing.cutoff})</Typography>
+                  : <Typography color="error.main" fontWeight={600}>✗ Not Current ({results.filing.cutoff})</Typography>
+                ) : <Typography color="text.secondary">N/A</Typography>}
               </CardContent>
             </Card>
           )}
+           {loading && !bulletinData && (
+             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                <Typography>Loading initial visa bulletin data...</Typography>
+             </Box>
+           )}
         </Container>
       </Box>
     </LocalizationProvider>
   );
 };
 
-export default App; 
+export default App;
