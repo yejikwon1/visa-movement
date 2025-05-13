@@ -1,66 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
     <title>Visa Bulletin Priority Date Checker</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Visa Bulletin Priority Date Checker</h1>
-            <p>Check if your priority date is current based on the latest visa bulletin</p>
-        </header>
-
-        <main>
-            <div class="form-container">
-                <div class="form-group">
-                    <label for="visa-type">Visa Type</label>
-                    <select id="visa-type" required>
-                        <option value="employment">Employment-Based</option>
-                        <option value="family">Family-Sponsored</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="category">Category</label>
-                    <select id="category" required>
-                        <option value="">Select a category...</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="country">Country of Chargeability</label>
-                    <select id="country" required>
-                        <option value="">Select a country...</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="priority-date">Priority Date</label>
-                    <input type="date" id="priority-date" required>
-                </div>
-
-                <button id="check-status-btn" class="primary-button">Check Status</button>
-            </div>
-
-            <div class="results-container">
-                <div class="result-box">
-                    <h3>Final Action Date Status</h3>
-                    <span id="fad-status" class="status"></span>
-                </div>
-                <div class="result-box">
-                    <h3>Dates for Filing Status</h3>
-                    <span id="dff-status" class="status"></span>
-                </div>
-            </div>
-        </main>
-
-        <footer>
-            <p>Data source: U.S. Department of State Visa Bulletin</p>
-        </footer>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html> 
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

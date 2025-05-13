@@ -5,6 +5,8 @@ import json
 from datetime import datetime
 import os
 
+#test
+
 # 📦 JSONBin 설정
 API_KEY = "$2a$10$chnGp34LEzygcMi0MZX3Lez0oi8NoWGnrfskj9TjdapYXh8nou2sC"
 BIN_ID = "68229ba28a456b79669c8a65"
