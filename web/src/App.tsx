@@ -7,7 +7,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  TextField,
   Button,
   Box,
   Card,
@@ -33,23 +32,26 @@ const App = () => {
   const [country, setCountry] = useState('All Chargeability Areas');
   const [priorityDate, setPriorityDate] = useState<Date | null>(null);
   const [vbData, setVbData] = useState<VisaBulletinData | null>(null);
+  const [permDays, setPermDays] = useState<number | null>(null);
   const [finalActionResult, setFinalActionResult] = useState('');
   const [filingDateResult, setFilingDateResult] = useState('');
+  const [expectedPermDate, setExpectedPermDate] = useState<string | null>(null);
 
   const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6822940a8a456b79669c86e9/latest';
+  const PERM_JSONBIN_URL = 'https://api.jsonbin.io/v3/b/68229ba28a456b79669c8a65/latest';
   const JSONBIN_API_KEY = '$2a$10$chnGp34LEzygcMi0MZX3Lez0oi8NoWGnrfskj9TjdapYXh8nou2sC';
 
+
   useEffect(() => {
+    // Fetch Visa Bulletin data
     fetch(JSONBIN_URL, {
-      headers: {
-        'X-Master-Key': JSONBIN_API_KEY,
-      },
+      headers: { 'X-Master-Key': JSONBIN_API_KEY },
     })
       .then((res) => res.json())
       .then((data) => {
         const rawRecord = data.record;
-
-        // Normalize filing keys: remove spaces in country keys
+  
+        // Normalize country keys for filing dates
         Object.keys(rawRecord.dates_for_filing.employment).forEach((catKey) => {
           const categoryData = rawRecord.dates_for_filing.employment[catKey];
           Object.keys(categoryData).forEach((key) => {
@@ -59,12 +61,27 @@ const App = () => {
             }
           });
         });
-
+  
         setVbData(rawRecord);
       })
       .catch((err) => console.error('❌ Error fetching VB data:', err));
+  
+    // ✅ FIXED: Fetch PERM days data (record inside record)
+    fetch(PERM_JSONBIN_URL, {
+      headers: { 'X-Master-Key': JSONBIN_API_KEY },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const days = data.record?.record?.calendar_days;
+        if (typeof days === 'number') {
+          setPermDays(days);
+        } else {
+          console.warn('PERM calendar_days not found');
+        }
+      })
+      .catch((err) => console.error('❌ Error fetching PERM data:', err));
   }, []);
-
+  
   const checkStatus = () => {
     if (!vbData || !priorityDate) {
       console.warn('❌ Missing vbData or priorityDate');
@@ -90,20 +107,12 @@ const App = () => {
     const mappedCategory = categoryMap[category];
     const mappedCountry = countryMap[country].replace(/\s/g, '');
 
-    if (!mappedCategory || !mappedCountry) {
-      console.warn('❌ Invalid category or country mapping');
-      return;
-    }
-
     const pdString = format(priorityDate, 'yyyyMMdd');
     const finalCutoffRaw =
       vbData.final_action_dates.employment[mappedCategory]?.[mappedCountry];
 
     const filingCategoryData = vbData.dates_for_filing.employment[mappedCategory];
     const filingCutoffRaw = filingCategoryData?.[mappedCountry];
-
-    console.log('📦 finalCutoffRaw:', finalCutoffRaw);
-    console.log('📦 filingCutoffRaw:', filingCutoffRaw);
 
     const formatCutoff = (raw: string) => {
       const parsed = parse(raw, 'ddMMMyy', new Date());
@@ -140,6 +149,16 @@ const App = () => {
       );
     } else {
       setFilingDateResult('N/A');
+    }
+
+    // Calculate expected PERM processing date
+    if (permDays && priorityDate) {
+      const expectedDate = new Date(priorityDate);
+      expectedDate.setDate(expectedDate.getDate() + permDays);
+      const formatted = format(expectedDate, 'MM-dd-yyyy');
+      setExpectedPermDate(formatted);
+    } else {
+      setExpectedPermDate(null);
     }
   };
 
@@ -201,12 +220,17 @@ const App = () => {
         </Box>
       </Paper>
 
-      {(finalActionResult || filingDateResult) && (
+      {(finalActionResult || filingDateResult || expectedPermDate) && (
         <Card sx={{ mb: 2 }}>
           <CardContent>
             <Typography variant="h6">Results</Typography>
             <Typography>Final Action Dates: {finalActionResult}</Typography>
             <Typography>Dates for Filing: {filingDateResult}</Typography>
+            {expectedPermDate && (
+              <Typography>
+                Expected PERM Processing Date: 📅 {expectedPermDate}
+              </Typography>
+            )}
           </CardContent>
         </Card>
       )}
