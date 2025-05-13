@@ -20,15 +20,20 @@ import { parse, format } from 'date-fns';
 interface VisaBulletinData {
   final_action_dates: {
     employment: Record<string, Record<string, string>>;
+    family: Record<string, Record<string, string>>;
   };
   dates_for_filing: {
     employment: Record<string, Record<string, string>>;
+    family: Record<string, Record<string, string>>;
   };
 }
 
 const App = () => {
   const [visaType, setVisaType] = useState('Employment-Based');
   const [category, setCategory] = useState('EB3');
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([
+    'EB1', 'EB2', 'EB3', 'EB4', 'EB5',
+  ]);
   const [country, setCountry] = useState('All Chargeability Areas');
   const [priorityDate, setPriorityDate] = useState<Date | null>(null);
   const [vbData, setVbData] = useState<VisaBulletinData | null>(null);
@@ -41,32 +46,30 @@ const App = () => {
   const PERM_JSONBIN_URL = 'https://api.jsonbin.io/v3/b/68229ba28a456b79669c8a65/latest';
   const JSONBIN_API_KEY = '$2a$10$chnGp34LEzygcMi0MZX3Lez0oi8NoWGnrfskj9TjdapYXh8nou2sC';
 
-
   useEffect(() => {
-    // Fetch Visa Bulletin data
     fetch(JSONBIN_URL, {
       headers: { 'X-Master-Key': JSONBIN_API_KEY },
     })
       .then((res) => res.json())
       .then((data) => {
         const rawRecord = data.record;
-  
-        // Normalize country keys for filing dates
-        Object.keys(rawRecord.dates_for_filing.employment).forEach((catKey) => {
-          const categoryData = rawRecord.dates_for_filing.employment[catKey];
-          Object.keys(categoryData).forEach((key) => {
-            const normalizedKey = key.replace(/\s/g, '');
-            if (normalizedKey !== key) {
-              categoryData[normalizedKey] = categoryData[key];
-            }
+
+        ['employment', 'family'].forEach((type) => {
+          Object.keys(rawRecord.dates_for_filing[type]).forEach((catKey) => {
+            const categoryData = rawRecord.dates_for_filing[type][catKey];
+            Object.keys(categoryData).forEach((key) => {
+              const normalizedKey = key.replace(/\s/g, '');
+              if (normalizedKey !== key) {
+                categoryData[normalizedKey] = categoryData[key];
+              }
+            });
           });
         });
-  
+
         setVbData(rawRecord);
       })
       .catch((err) => console.error('❌ Error fetching VB data:', err));
-  
-    // ✅ FIXED: Fetch PERM days data (record inside record)
+
     fetch(PERM_JSONBIN_URL, {
       headers: { 'X-Master-Key': JSONBIN_API_KEY },
     })
@@ -75,25 +78,38 @@ const App = () => {
         const days = data.record?.record?.calendar_days;
         if (typeof days === 'number') {
           setPermDays(days);
-        } else {
-          console.warn('PERM calendar_days not found');
         }
       })
       .catch((err) => console.error('❌ Error fetching PERM data:', err));
   }, []);
-  
-  const checkStatus = () => {
-    if (!vbData || !priorityDate) {
-      console.warn('❌ Missing vbData or priorityDate');
-      return;
-    }
 
-    const categoryMap: Record<string, string> = {
+  useEffect(() => {
+    if (visaType === 'Employment-Based') {
+      setCategoryOptions(['EB1', 'EB2', 'EB3', 'EB4', 'EB5']);
+      setCategory('EB3');
+    } else {
+      setCategoryOptions(['F1', 'F2A', 'F2B', 'F3', 'F4']);
+      setCategory('F2A');
+    }
+  }, [visaType]);
+
+  const checkStatus = () => {
+    if (!vbData || !priorityDate) return;
+
+    const categoryMapEmployment: Record<string, string> = {
       EB1: '1st',
       EB2: '2nd',
       EB3: '3rd',
       EB4: '4th',
       EB5: '5th Unreserved (including C5, T5, I5, R5, NU, RU)',
+    };
+
+    const categoryMapFamily: Record<string, string> = {
+      F1: 'F1',
+      F2A: 'F2A',
+      F2B: 'F2B',
+      F3: 'F3',
+      F4: 'F4',
     };
 
     const countryMap: Record<string, string> = {
@@ -104,15 +120,14 @@ const App = () => {
       Philippines: 'PHILIPPINES',
     };
 
+    const categoryMap = visaType === 'Employment-Based' ? categoryMapEmployment : categoryMapFamily;
     const mappedCategory = categoryMap[category];
     const mappedCountry = countryMap[country].replace(/\s/g, '');
+    const source = visaType === 'Employment-Based' ? 'employment' : 'family';
 
     const pdString = format(priorityDate, 'yyyyMMdd');
-    const finalCutoffRaw =
-      vbData.final_action_dates.employment[mappedCategory]?.[mappedCountry];
-
-    const filingCategoryData = vbData.dates_for_filing.employment[mappedCategory];
-    const filingCutoffRaw = filingCategoryData?.[mappedCountry];
+    const finalCutoffRaw = vbData.final_action_dates[source][mappedCategory]?.[mappedCountry];
+    const filingCutoffRaw = vbData.dates_for_filing[source][mappedCategory]?.[mappedCountry];
 
     const formatCutoff = (raw: string) => {
       const parsed = parse(raw, 'ddMMMyy', new Date());
@@ -129,34 +144,26 @@ const App = () => {
 
     if (finalCutoffRaw) {
       const isCurrent = compareDates(pdString, finalCutoffRaw);
-      const formatted =
-        finalCutoffRaw === 'C' || finalCutoffRaw === 'U'
-          ? finalCutoffRaw
-          : formatCutoff(finalCutoffRaw);
-      setFinalActionResult(
-        isCurrent ? `✅ Current (${formatted})` : `❌ Not Current (${formatted})`
-      );
+      const formatted = ['C', 'U'].includes(finalCutoffRaw)
+        ? finalCutoffRaw
+        : formatCutoff(finalCutoffRaw);
+      setFinalActionResult(isCurrent ? `✅ Current (${formatted})` : `❌ Not Current (${formatted})`);
     }
 
     if (filingCutoffRaw) {
       const isCurrent = compareDates(pdString, filingCutoffRaw);
-      const formatted =
-        filingCutoffRaw === 'C' || filingCutoffRaw === 'U'
-          ? filingCutoffRaw
-          : formatCutoff(filingCutoffRaw);
-      setFilingDateResult(
-        isCurrent ? `✅ Current (${formatted})` : `❌ Not Current (${formatted})`
-      );
+      const formatted = ['C', 'U'].includes(filingCutoffRaw)
+        ? filingCutoffRaw
+        : formatCutoff(filingCutoffRaw);
+      setFilingDateResult(isCurrent ? `✅ Current (${formatted})` : `❌ Not Current (${formatted})`);
     } else {
       setFilingDateResult('N/A');
     }
 
-    // Calculate expected PERM processing date
     if (permDays && priorityDate) {
       const expectedDate = new Date(priorityDate);
       expectedDate.setDate(expectedDate.getDate() + permDays);
-      const formatted = format(expectedDate, 'MM-dd-yyyy');
-      setExpectedPermDate(formatted);
+      setExpectedPermDate(format(expectedDate, 'MM-dd-yyyy'));
     } else {
       setExpectedPermDate(null);
     }
@@ -179,12 +186,16 @@ const App = () => {
 
         <FormControl fullWidth margin="normal">
           <InputLabel>Category</InputLabel>
-          <Select value={category} onChange={(e: SelectChangeEvent) => setCategory(e.target.value)}>
-            <MenuItem value="EB1">EB1</MenuItem>
-            <MenuItem value="EB2">EB2</MenuItem>
-            <MenuItem value="EB3">EB3</MenuItem>
-            <MenuItem value="EB4">EB4</MenuItem>
-            <MenuItem value="EB5">EB5</MenuItem>
+          <Select
+            key={visaType}
+            value={category}
+            onChange={(e: SelectChangeEvent) => setCategory(e.target.value)}
+          >
+            {categoryOptions.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
