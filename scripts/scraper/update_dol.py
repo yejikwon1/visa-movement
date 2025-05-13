@@ -12,7 +12,7 @@ HEADERS = {
     "Content-Type": "application/json",
     "X-Master-Key": API_KEY
 }
-JSONBIN_URL = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
+JSONBIN_URL = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
 
 # 🌐 DOL URL
 URL = "https://flag.dol.gov/processingtimes"
