@@ -8,7 +8,7 @@ from parse_html import parse_visa_bulletin
 
 # JSONBin 설정
 API_KEY = "$2a$10$chnGp34LEzygcMi0MZX3Lez0oi8NoWGnrfskj9TjdapYXh8nou2sC"
-BIN_ID = "682129658561e97a50120314"
+BIN_ID = "6822940a8a456b79669c86e9"
 HEADERS = {
     "Content-Type": "application/json",
     "X-Master-Key": API_KEY
