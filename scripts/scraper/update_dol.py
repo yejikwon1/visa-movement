@@ -7,12 +7,12 @@ import os
 
 # 📦 JSONBin 설정
 API_KEY = "$2a$10$chnGp34LEzygcMi0MZX3Lez0oi8NoWGnrfskj9TjdapYXh8nou2sC"
-BIN_ID = "682122be8561e97a50120085"
+BIN_ID = "68229ba28a456b79669c8a65"
 HEADERS = {
     "Content-Type": "application/json",
     "X-Master-Key": API_KEY
 }
-JSONBIN_URL = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
+JSONBIN_URL = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
 
 # 🌐 DOL URL
 URL = "https://flag.dol.gov/processingtimes"
