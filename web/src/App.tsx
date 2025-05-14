@@ -11,11 +11,14 @@ import {
   Box,
   Card,
   CardContent,
+  Tabs,
+  Tab,
   SelectChangeEvent,
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { parse, format } from 'date-fns';
+import VisaTable from './VisaTable';
 
 interface VisaBulletinData {
   final_action_dates: {
@@ -29,11 +32,10 @@ interface VisaBulletinData {
 }
 
 const App = () => {
+  const [tabIndex, setTabIndex] = useState(0);
   const [visaType, setVisaType] = useState('Employment-Based');
   const [category, setCategory] = useState('EB3');
-  const [categoryOptions, setCategoryOptions] = useState<string[]>([
-    'EB1', 'EB2', 'EB3', 'EB4', 'EB5',
-  ]);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(['EB1', 'EB2', 'EB3', 'EB4', 'EB5']);
   const [country, setCountry] = useState('All Chargeability Areas');
   const [priorityDate, setPriorityDate] = useState<Date | null>(null);
   const [vbData, setVbData] = useState<VisaBulletinData | null>(null);
@@ -44,7 +46,7 @@ const App = () => {
 
   const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6822940a8a456b79669c86e9/latest';
   const PERM_JSONBIN_URL = 'https://api.jsonbin.io/v3/b/68229ba28a456b79669c8a65/latest';
-  const JSONBIN_API_KEY = '$2a$10$chnGp34LEzygcMi0MZX3Lez0oi8NoWGnrfskj9TjdapYXh8nou2sC';
+  const JSONBIN_API_KEY = 'YOUR_JSONBIN_API_KEY';
 
   useEffect(() => {
     fetch(JSONBIN_URL, {
@@ -53,7 +55,6 @@ const App = () => {
       .then((res) => res.json())
       .then((data) => {
         const rawRecord = data.record;
-
         ['employment', 'family'].forEach((type) => {
           Object.keys(rawRecord.dates_for_filing[type]).forEach((catKey) => {
             const categoryData = rawRecord.dates_for_filing[type][catKey];
@@ -65,10 +66,8 @@ const App = () => {
             });
           });
         });
-
         setVbData(rawRecord);
-      })
-      .catch((err) => console.error('❌ Error fetching VB data:', err));
+      });
 
     fetch(PERM_JSONBIN_URL, {
       headers: { 'X-Master-Key': JSONBIN_API_KEY },
@@ -76,11 +75,8 @@ const App = () => {
       .then((res) => res.json())
       .then((data) => {
         const days = data.record?.record?.calendar_days;
-        if (typeof days === 'number') {
-          setPermDays(days);
-        }
-      })
-      .catch((err) => console.error('❌ Error fetching PERM data:', err));
+        if (typeof days === 'number') setPermDays(days);
+      });
   }, []);
 
   useEffect(() => {
@@ -101,7 +97,7 @@ const App = () => {
       EB2: '2nd',
       EB3: '3rd',
       EB4: '4th',
-      EB5: '5th Unreserved (including C5, T5, I5, R5, NU, RU)',
+      EB5: '5thUnreserved(includingC5,T5,I5,R5,NU,RU)',
     };
 
     const categoryMapFamily: Record<string, string> = {
@@ -170,80 +166,94 @@ const App = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 6 }}>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" align="center" gutterBottom>
-        Visa Bulletin Priority Date Checker
+        Visa Bulletin Tool
       </Typography>
 
-      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Visa Type</InputLabel>
-          <Select value={visaType} onChange={(e) => setVisaType(e.target.value)}>
-            <MenuItem value="Employment-Based">Employment-Based</MenuItem>
-            <MenuItem value="Family-Based">Family-Based</MenuItem>
-          </Select>
-        </FormControl>
+      <Tabs value={tabIndex} onChange={(e, val) => setTabIndex(val)} centered sx={{ mb: 3 }}>
+        <Tab label="Priority Date Checker" />
+        <Tab label="Visa Bulletin Table" />
+      </Tabs>
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Category</InputLabel>
-          <Select
-            key={visaType}
-            value={category}
-            onChange={(e: SelectChangeEvent) => setCategory(e.target.value)}
-          >
-            {categoryOptions.map((cat) => (
-              <MenuItem key={cat} value={cat}>
-                {cat}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      {tabIndex === 0 && (
+        <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Visa Type</InputLabel>
+            <Select value={visaType} onChange={(e) => setVisaType(e.target.value)}>
+              <MenuItem value="Employment-Based">Employment-Based</MenuItem>
+              <MenuItem value="Family-Based">Family-Based</MenuItem>
+            </Select>
+          </FormControl>
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Country of Chargeability</InputLabel>
-          <Select value={country} onChange={(e: SelectChangeEvent) => setCountry(e.target.value)}>
-            <MenuItem value="All Chargeability Areas">All Chargeability Areas</MenuItem>
-            <MenuItem value="China (mainland born)">China (mainland born)</MenuItem>
-            <MenuItem value="India">India</MenuItem>
-            <MenuItem value="Mexico">Mexico</MenuItem>
-            <MenuItem value="Philippines">Philippines</MenuItem>
-          </Select>
-        </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Category</InputLabel>
+            <Select
+              key={visaType}
+              value={category}
+              onChange={(e: SelectChangeEvent) => setCategory(e.target.value)}
+            >
+              {categoryOptions.map((cat) => (
+                <MenuItem key={cat} value={cat}>
+                  {cat}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <DatePicker
-            label="Priority Date (MM/DD/YYYY)"
-            value={priorityDate}
-            onChange={(newValue: Date | null) => setPriorityDate(newValue)}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-                margin: 'normal',
-              },
-            }}
-          />
-        </LocalizationProvider>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Country of Chargeability</InputLabel>
+            <Select value={country} onChange={(e: SelectChangeEvent) => setCountry(e.target.value)}>
+              <MenuItem value="All Chargeability Areas">All Chargeability Areas</MenuItem>
+              <MenuItem value="China (mainland born)">China (mainland born)</MenuItem>
+              <MenuItem value="India">India</MenuItem>
+              <MenuItem value="Mexico">Mexico</MenuItem>
+              <MenuItem value="Philippines">Philippines</MenuItem>
+            </Select>
+          </FormControl>
 
-        <Box textAlign="center" mt={2}>
-          <Button variant="contained" onClick={checkStatus}>
-            Check Status
-          </Button>
-        </Box>
-      </Paper>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Priority Date (MM/DD/YYYY)"
+              value={priorityDate}
+              onChange={(newValue: Date | null) => setPriorityDate(newValue)}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  margin: 'normal',
+                },
+              }}
+            />
+          </LocalizationProvider>
 
-      {(finalActionResult || filingDateResult || expectedPermDate) && (
-        <Card sx={{ mb: 2 }}>
-          <CardContent>
-            <Typography variant="h6">Results</Typography>
-            <Typography>Final Action Dates: {finalActionResult}</Typography>
-            <Typography>Dates for Filing: {filingDateResult}</Typography>
-            {expectedPermDate && (
-              <Typography>
-                Expected PERM Processing Date: 📅 {expectedPermDate}
-              </Typography>
-            )}
-          </CardContent>
-        </Card>
+          <Box textAlign="center" mt={2}>
+            <Button variant="contained" onClick={checkStatus}>
+              Check Status
+            </Button>
+          </Box>
+
+          {(finalActionResult || filingDateResult || expectedPermDate) && (
+            <Card sx={{ mt: 4 }}>
+              <CardContent>
+                <Typography variant="h6">Results</Typography>
+                <Typography>Final Action Dates: {finalActionResult}</Typography>
+                <Typography>Dates for Filing: {filingDateResult}</Typography>
+                {expectedPermDate && (
+                  <Typography>
+                    Expected PERM Processing Date: 📅 {expectedPermDate}
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </Paper>
+      )}
+
+      {tabIndex === 1 && vbData && (
+        <>
+          <VisaTable data={vbData.final_action_dates.family} title="Final Action Dates - Family" />
+          <VisaTable data={vbData.dates_for_filing.family} title="Dates for Filing - Family" />
+        </>
       )}
     </Container>
   );
