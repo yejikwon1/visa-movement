@@ -1,15 +1,59 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
+import {
+  Container,
+  Paper,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+  Box,
+  Card,
+  CardContent,
+  SelectChangeEvent,
+} from '@mui/material';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { parse, format } from 'date-fns';
+import { predictFilingDateFromModel } from './predictFilingDate';
+import forecastData from './eb3_forecast.json';
+=======
 import { Container, Typography, Tabs, Tab } from '@mui/material';
 import { VisaBulletinData } from './types/visa';
 import PriorityDateChecker from './components/priority-date-checker/PriorityDateChecker';
 import VisaTable from './components/visa-bulletin-table/VisaTable';
 import { fetchVisaBulletinData, fetchPermDays } from './services/visaService';
+>>>>>>> 1479a3143f7f2dd8dc2901b03cf3c275c4a3560d
 
 const App = () => {
+<<<<<<< HEAD
+  const [visaType, setVisaType] = useState('Employment-Based');
+  const [category, setCategory] = useState('EB3');
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(['EB1', 'EB2', 'EB3', 'EB4', 'EB5']);
+  const [country, setCountry] = useState('All Chargeability Areas');
+  const [priorityDate, setPriorityDate] = useState<Date | null>(null);
+=======
   const [tabIndex, setTabIndex] = useState(0);
+>>>>>>> 1479a3143f7f2dd8dc2901b03cf3c275c4a3560d
   const [vbData, setVbData] = useState<VisaBulletinData | null>(null);
   const [permDays, setPermDays] = useState<number | null>(null);
+<<<<<<< HEAD
+  const [finalActionResult, setFinalActionResult] = useState('');
+  const [filingDateResult, setFilingDateResult] = useState('');
+  const [expectedPermDate, setExpectedPermDate] = useState<string | null>(null);
+  const [predictedFilingDate, setPredictedFilingDate] = useState<string | null>(null);
+=======
+>>>>>>> 1479a3143f7f2dd8dc2901b03cf3c275c4a3560d
 
+<<<<<<< HEAD
+  const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6822940a8a456b79669c86e9/latest';
+  const PERM_JSONBIN_URL = 'https://api.jsonbin.io/v3/b/68229ba28a456b79669c8a65/latest';
+  const JSONBIN_API_KEY = '$2a$10$chnGp34LEzygcMi0MZX3Lez0oi8NoWGnrfskj9TjdapYXh8nou2sC'; 
+
+=======
+>>>>>>> 1479a3143f7f2dd8dc2901b03cf3c275c4a3560d
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -27,6 +71,99 @@ const App = () => {
     loadData();
   }, []);
 
+<<<<<<< HEAD
+  useEffect(() => {
+    if (visaType === 'Employment-Based') {
+      setCategoryOptions(['EB1', 'EB2', 'EB3', 'EB4', 'EB5']);
+      setCategory('EB3');
+    } else {
+      setCategoryOptions(['F1', 'F2A', 'F2B', 'F3', 'F4']);
+      setCategory('F2A');
+    }
+  }, [visaType]);
+
+  const checkStatus = () => {
+    if (!vbData || !priorityDate) return;
+
+    const categoryMapEmployment: Record<string, string> = {
+      EB1: '1st',
+      EB2: '2nd',
+      EB3: '3rd',
+      EB4: '4th',
+      EB5: '5th Unreserved (including C5, T5, I5, R5, NU, RU)',
+    };
+
+    const categoryMapFamily: Record<string, string> = {
+      F1: 'F1',
+      F2A: 'F2A',
+      F2B: 'F2B',
+      F3: 'F3',
+      F4: 'F4',
+    };
+
+    const countryMap: Record<string, string> = {
+      'All Chargeability Areas': 'AllChargeabilityAreasExceptThoseListed',
+      'China (mainland born)': 'CHINA-mainlandborn',
+      India: 'INDIA',
+      Mexico: 'MEXICO',
+      Philippines: 'PHILIPPINES',
+    };
+
+    const categoryMap = visaType === 'Employment-Based' ? categoryMapEmployment : categoryMapFamily;
+    const mappedCategory = categoryMap[category];
+    const mappedCountry = countryMap[country].replace(/\s/g, '');
+    const source = visaType === 'Employment-Based' ? 'employment' : 'family';
+
+    const pdString = format(priorityDate, 'yyyyMMdd');
+    const finalCutoffRaw = vbData.final_action_dates[source][mappedCategory]?.[mappedCountry];
+    const filingCutoffRaw = vbData.dates_for_filing[source][mappedCategory]?.[mappedCountry];
+
+    const formatCutoff = (raw: string) => {
+      const parsed = parse(raw, 'ddMMMyy', new Date());
+      return format(parsed, 'MM/dd/yyyy');
+    };
+
+    const compareDates = (pd: string, cutoff: string) => {
+      if (cutoff === 'C' || cutoff === 'U') return false;
+      const pdNum = parseInt(pd);
+      const cutoffDate = parse(cutoff, 'ddMMMyy', new Date());
+      const cutoffNum = parseInt(format(cutoffDate, 'yyyyMMdd'));
+      return pdNum <= cutoffNum;
+    };
+
+    if (finalCutoffRaw) {
+      const isCurrent = compareDates(pdString, finalCutoffRaw);
+      const formatted = ['C', 'U'].includes(finalCutoffRaw)
+        ? finalCutoffRaw
+        : formatCutoff(finalCutoffRaw);
+      setFinalActionResult(isCurrent ? `✅ Current (${formatted})` : `❌ Not Current (${formatted})`);
+    }
+
+    if (filingCutoffRaw) {
+      const isCurrent = compareDates(pdString, filingCutoffRaw);
+      const formatted = ['C', 'U'].includes(filingCutoffRaw)
+        ? filingCutoffRaw
+        : formatCutoff(filingCutoffRaw);
+      setFilingDateResult(isCurrent ? `✅ Current (${formatted})` : `❌ Not Current (${formatted})`);
+
+      const predicted = predictFilingDateFromModel(pdString);
+      setPredictedFilingDate(predicted);
+    } else {
+      setFilingDateResult('N/A');
+      setPredictedFilingDate(null);
+    }
+
+    if (permDays && priorityDate) {
+      const expectedDate = new Date(priorityDate);
+      expectedDate.setDate(expectedDate.getDate() + permDays);
+      setExpectedPermDate(format(expectedDate, 'MM-dd-yyyy'));
+    } else {
+      setExpectedPermDate(null);
+    }
+  };
+
+=======
+>>>>>>> 1479a3143f7f2dd8dc2901b03cf3c275c4a3560d
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" align="center" gutterBottom>
@@ -40,6 +177,54 @@ const App = () => {
 
       {tabIndex === 0 && <PriorityDateChecker vbData={vbData} permDays={permDays} />}
 
+<<<<<<< HEAD
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Country of Chargeability</InputLabel>
+          <Select value={country} onChange={(e: SelectChangeEvent) => setCountry(e.target.value)}>
+            <MenuItem value="All Chargeability Areas">All Chargeability Areas</MenuItem>
+            <MenuItem value="China (mainland born)">China (mainland born)</MenuItem>
+            <MenuItem value="India">India</MenuItem>
+            <MenuItem value="Mexico">Mexico</MenuItem>
+            <MenuItem value="Philippines">Philippines</MenuItem>
+          </Select>
+        </FormControl>
+
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            label="Priority Date (MM/DD/YYYY)"
+            value={priorityDate}
+            onChange={(newValue: Date | null) => setPriorityDate(newValue)}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                margin: 'normal',
+              },
+            }}
+          />
+        </LocalizationProvider>
+
+        <Box textAlign="center" mt={2}>
+          <Button variant="contained" onClick={checkStatus}>
+            Check Status
+          </Button>
+        </Box>
+      </Paper>
+
+      {(finalActionResult || filingDateResult || expectedPermDate || predictedFilingDate) && (
+        <Card sx={{ mb: 2 }}>
+          <CardContent>
+            <Typography variant="h6">Results</Typography>
+            <Typography>Final Action Dates: {finalActionResult}</Typography>
+            <Typography>Dates for Filing: {filingDateResult}</Typography>
+            {expectedPermDate && (
+              <Typography>Expected PERM Processing Date: 📅 {expectedPermDate}</Typography>
+            )}
+            {predictedFilingDate && (
+              <Typography>📆 Expected Filing Date: {predictedFilingDate}</Typography>
+            )}
+          </CardContent>
+        </Card>
+=======
       {tabIndex === 1 && vbData && (
         <>
           <VisaTable data={vbData.final_action_dates.family} title="Final Action Dates - Family" />
@@ -47,6 +232,7 @@ const App = () => {
           <VisaTable data={vbData.final_action_dates.employment} title="Final Action Dates - Employment" />
           <VisaTable data={vbData.dates_for_filing.employment} title="Dates for Filing - Employment" />
         </>
+>>>>>>> 1479a3143f7f2dd8dc2901b03cf3c275c4a3560d
       )}
     </Container>
   );
