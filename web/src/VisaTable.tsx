@@ -27,7 +27,9 @@ const formatToMonthYearDate = (raw: string) => {
 };
 
 const displayCountryName = (countryCode: string) => {
-  if (countryCode === 'AllChargeabilityAreasExceptThoseListed') {
+  const normalized = countryCode.replace(/\s/g, '');
+
+  if (normalized === 'AllChargeabilityAreasExceptThoseListed') {
     return (
       <>
         All Chargeability<br />
@@ -36,9 +38,10 @@ const displayCountryName = (countryCode: string) => {
       </>
     );
   }
-  if (countryCode === 'CHINA-mainlandborn') {
-    return 'CHINA';
-  }
+
+  if (normalized === 'CHINA-mainlandborn') return 'CHINA';
+  if (normalized === 'ELSALVADORGUATEMALAHONDURAS') return 'EL SALVADOR GUATEMALA HONDURAS';
+
   return countryCode.toUpperCase();
 };
 
@@ -76,14 +79,18 @@ const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
           {categories.map((category) => (
             <TableRow key={category}>
               <TableCell sx={{ fontSize: '1rem', py: 1.2 }}>{category}</TableCell>
-              {countries.map((country) => (
-                <TableCell
-                  key={country}
-                  sx={{ fontSize: '1rem', py: 1.2, whiteSpace: 'nowrap' }}
-                >
-                  {formatToMonthYearDate(data[category][country])}
-                </TableCell>
-              ))}
+              {countries.map((country) => {
+                const normalizedCountry = country.replace(/\s/g, '');
+                const rawDate = data[category][normalizedCountry] || data[category][country];
+                return (
+                  <TableCell
+                    key={country}
+                    sx={{ fontSize: '1rem', py: 1.2, whiteSpace: 'nowrap' }}
+                  >
+                    {formatToMonthYearDate(rawDate)}
+                  </TableCell>
+                );
+              })}
             </TableRow>
           ))}
         </TableBody>

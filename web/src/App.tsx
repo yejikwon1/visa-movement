@@ -253,6 +253,10 @@ const App = () => {
         <>
           <VisaTable data={vbData.final_action_dates.family} title="Final Action Dates - Family" />
           <VisaTable data={vbData.dates_for_filing.family} title="Dates for Filing - Family" />
+
+          {/* ✅ Employment-Based 테이블 추가 */}
+          <VisaTable data={vbData.final_action_dates.employment} title="Final Action Dates - Employment" />
+          <VisaTable data={vbData.dates_for_filing.employment} title="Dates for Filing - Employment" />
         </>
       )}
     </Container>
