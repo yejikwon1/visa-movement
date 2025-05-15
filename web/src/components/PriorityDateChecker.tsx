@@ -15,7 +15,7 @@ import {
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { parse, format } from 'date-fns';
-import { VisaBulletinData, categoryMapEmployment, categoryMapFamily, countryMap } from '../../types/visa';
+import { VisaBulletinData, categoryMapEmployment, categoryMapFamily, countryMap } from '../types/visa';
 
 interface PriorityDateCheckerProps {
   vbData: VisaBulletinData | null;
