@@ -16,17 +16,24 @@ HEADERS = {
 
 def get_latest_url():
     now = datetime.now()
-    month_name = now.strftime("%B").lower()  # ex: 'may'
-    year_full = now.year                    # ex: 2025
+    if now.month == 12:
+        next_month = 1
+        year = now.year + 1
+    else:
+        next_month = now.month +1
+        year = now.year
 
-    # The Bulletin is considered to be in the next fiscal year starting in October, so we handle this exception
-    fiscal_year = year_full
-    if now.month < 10:
-        fiscal_year = year_full
+    # 'june', 'july' 등 소문자 영어 월 이름 생성
+    month_name = datetime(year, next_month, 1).strftime("%B").lower()
+
+    # fiscal year는 보통 연도와 동일하게 사용됨
+    fiscal_year = year
 
     # 예: /2025/visa-bulletin-for-may-2025.html
     base_url = "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin"
-    full_url = f"{base_url}/{fiscal_year}/visa-bulletin-for-{month_name}-{year_full}.html"
+    full_url = f"{base_url}/{fiscal_year}/visa-bulletin-for-{month_name}-{year}.html"
+
+    print(f"Constructed URL: {full_url}")
 
     return full_url
 
