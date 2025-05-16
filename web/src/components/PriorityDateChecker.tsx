@@ -164,6 +164,10 @@ const PriorityDateChecker: React.FC<PriorityDateCheckerProps> = ({ vbData, permD
           </CardContent>
         </Card>
       )}
+
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+        Disclaimer: This website is for informational purposes only and does not provide legal advice. The data presented, including visa bulletin dates and priority date tools, is based on publicly available information and is not guaranteed to be accurate, complete, or up to date. Use of this site does not create an attorney-client relationship. For legal advice specific to your case, please consult a licensed immigration attorney.
+      </Typography>
     </Paper>
   );
 };

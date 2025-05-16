@@ -54,7 +54,15 @@ const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
       <Typography variant="h5" align="center" sx={{ pt: 2, pb: 2 }}>
         {title}
       </Typography>
-      <Table>
+      <Table
+        sx={{
+          border: '2px solid black',
+          '& .MuiTableCell-root': {
+            border: '2px solid black',
+            textAlign: 'center',
+          },
+        }}
+      >
         <TableHead>
           <TableRow>
             <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem', py: 1.5 }}>
