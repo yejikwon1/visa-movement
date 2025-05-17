@@ -27,7 +27,7 @@ const App = () => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h5" sx={{ flexGrow: 1 }}>
-            MYVISATRACKER
+            COOLVISATRACKER
           </Typography>
           <Button color="inherit" component={Link} to="/" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Priority Checker</Button>
           <Button color="inherit" component={Link} to="/table" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Visa Table</Button>
