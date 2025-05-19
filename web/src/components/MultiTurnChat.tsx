@@ -11,6 +11,7 @@ import {
 
 import { fetchVisaJson } from '../services/fetchVisaJson';
 import { generateSystemPrompt } from '../services/generateSystemPrompt';
+import { fetchChatViaBackend } from '../services/openaiService';
 
 export type ChatMessage = {
   role: 'user' | 'assistant';
@@ -45,28 +46,11 @@ const MultiTurnChat = () => {
         ...updatedHistory,
       ];
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: messagesToSend,
-        }),
-      });
-
-      const data = await response.json();
-      const message = data.choices?.[0]?.message;
-
-      if (!message || message.role !== 'assistant') {
-        throw new Error('Unexpected GPT response');
-      }
+      const responseContent = await fetchChatViaBackend(messagesToSend);
 
       const newMessage: ChatMessage = {
-        role: 'assistant' as const,
-        content: message.content,
+        role: 'assistant',
+        content: responseContent,
       };
 
       setChatHistory([...updatedHistory, newMessage]);
@@ -74,7 +58,7 @@ const MultiTurnChat = () => {
       console.error('❌ GPT error:', err);
       setChatHistory([
         ...updatedHistory,
-        { role: 'assistant' as const, content: '❌ Failed to get a response.' },
+        { role: 'assistant', content: '❌ Failed to get a response.' },
       ]);
     } finally {
       setLoading(false);
