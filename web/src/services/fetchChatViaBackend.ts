@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://localhost:8000"; // 배포 시 Render URL로 바꿔야 함
+const BACKEND_URL = "https://visa-movement-backend.onrender.com"; // 배포 시 Render URL로 바꿔야 함
 
 export async function fetchChatViaBackend(messages: { role: "user" | "assistant" | "system"; content: string }[]) {
   const response = await fetch(`${BACKEND_URL}/chat`, {
