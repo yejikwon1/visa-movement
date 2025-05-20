@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Box,
-  Button,
-  CircularProgress,
   Container,
   Paper,
-  TextField,
   Typography,
+  TextField,
+  Button,
+  Box,
+  CircularProgress,
 } from '@mui/material';
-
 import { fetchVisaJson } from '../services/fetchVisaJson';
 import { generateSystemPrompt } from '../services/generateSystemPrompt';
-import { fetchChatViaBackend } from '../services/openaiService';
 
-export type ChatMessage = {
+type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
 };
@@ -32,7 +30,10 @@ const MultiTurnChat = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const updatedHistory = [...chatHistory, { role: 'user' as const, content: input }];
+    const updatedHistory: ChatMessage[] = [
+      ...chatHistory,
+      { role: 'user', content: input },
+    ];
     setChatHistory(updatedHistory);
     setInput('');
     setLoading(true);
@@ -46,14 +47,29 @@ const MultiTurnChat = () => {
         ...updatedHistory,
       ];
 
-      const responseContent = await fetchChatViaBackend(messagesToSend);
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: messagesToSend,
+        }),
+      });
 
-      const newMessage: ChatMessage = {
-        role: 'assistant',
-        content: responseContent,
-      };
+      const data = await response.json();
+      const message = data.choices?.[0]?.message;
 
-      setChatHistory([...updatedHistory, newMessage]);
+      if (!message || message.role !== 'assistant') {
+        throw new Error('Unexpected GPT response');
+      }
+
+      setChatHistory([
+        ...updatedHistory,
+        { role: 'assistant', content: message.content },
+      ]);
     } catch (err) {
       console.error('❌ GPT error:', err);
       setChatHistory([
@@ -68,85 +84,66 @@ const MultiTurnChat = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Paper
-        elevation={6}
+        elevation={3}
         sx={{
-          height: '65vh',
+          height: '60vh',
           overflowY: 'auto',
-          p: 3,
-          mb: 3,
+          p: 2,
           display: 'flex',
           flexDirection: 'column',
-          bgcolor: '#ffffff',
-          borderRadius: 4,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e0e0e0',
+          gap: 1.5,
+          bgcolor: '#f5f5f5',
+          borderRadius: 2,
         }}
       >
         {chatHistory.map((msg, idx) => (
           <Box
             key={idx}
             sx={{
-              display: 'flex',
-              justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              mb: 2,
+              alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+              bgcolor: msg.role === 'user' ? '#d1ecf1' : '#d4edda',
+              px: 2,
+              py: 1,
+              borderRadius: 2,
+              maxWidth: '75%',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
             }}
           >
-            <Box
-              sx={{
-                maxWidth: '75%',
-                p: 2,
-                borderRadius: 3,
-                bgcolor: msg.role === 'user' ? '#e3f2fd' : '#f1f8e9',
-                color: '#333',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-                border: '1px solid #ddd',
-              }}
-            >
-              <Typography variant="caption" fontWeight="bold" color="textSecondary">
-                {msg.role === 'user' ? '👤 You' : '🤖 VisaBot'}
-              </Typography>
-              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', mt: 0.5 }}>
-                {msg.content}
-              </Typography>
-            </Box>
+            <Typography variant="body2" fontWeight="bold" gutterBottom>
+              {msg.role === 'user' ? '🧑 You' : '🤖 Bot'}
+            </Typography>
+            <Typography variant="body1">{msg.content}</Typography>
           </Box>
         ))}
 
         {loading && (
-          <Box sx={{ alignSelf: 'center', mt: 2 }}>
+          <Box sx={{ alignSelf: 'center', mt: 1 }}>
             <CircularProgress size={24} />
           </Box>
         )}
+
         <div ref={bottomRef} />
       </Paper>
 
       <Box
         component="form"
         onSubmit={handleSubmit}
-        sx={{
-          display: 'flex',
-          gap: 2,
-          backgroundColor: '#fafafa',
-          p: 2,
-          borderRadius: 3,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        }}
+        sx={{ display: 'flex', mt: 2, gap: 2 }}
       >
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Ask about your visa category, priority date..."
+          placeholder="Ask about your visa status..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
           size="small"
-          sx={{ borderRadius: 2 }}
         />
         <Button
-          variant="contained"
           type="submit"
-          disabled={loading || !input.trim()}
-          sx={{ textTransform: 'none', fontWeight: 'bold', px: 3, py: 1 }}
+          variant="contained"
+          disabled={!input.trim() || loading}
         >
           Send
         </Button>
