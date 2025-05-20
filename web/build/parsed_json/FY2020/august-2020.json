@@ -1,0 +1,220 @@
+{
+  "final_action_dates": {
+    "family": {
+      "F1": {
+        "AllChargeabilityAreasExceptThoseListed": "15AUG14",
+        "CHINA": "15AUG14",
+        "INDIA": "15AUG14",
+        "MEXICO": "22DEC97",
+        "PHILIPPINES": "01SEP11"
+      },
+      "F2A": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "F2B": {
+        "AllChargeabilityAreasExceptThoseListed": "08JUN15",
+        "CHINA": "08JUN15",
+        "INDIA": "08JUN15",
+        "MEXICO": "22MAR99",
+        "PHILIPPINES": "01APR11"
+      },
+      "F3": {
+        "AllChargeabilityAreasExceptThoseListed": "01JUN08",
+        "CHINA": "01JUN08",
+        "INDIA": "01JUN08",
+        "MEXICO": "15JUL96",
+        "PHILIPPINES": "15NOV01"
+      },
+      "F4": {
+        "AllChargeabilityAreasExceptThoseListed": "08SEP06",
+        "CHINA": "08SEP06",
+        "INDIA": "22FEB05",
+        "MEXICO": "15JUN98",
+        "PHILIPPINES": "01SEP01"
+      }
+    },
+    "employment": {
+      "1st": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "08FEB18",
+        "ELSALVADORGUATEMALAHONDURAS": "C",
+        "INDIA": "08FEB18",
+        "MEXICO": "C",
+        "PHILIPPINES": "C",
+        "VIETNAM": "C"
+      },
+      "2nd": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "15JAN16",
+        "ELSALVADORGUATEMALAHONDURAS": "C",
+        "INDIA": "08JUL09",
+        "MEXICO": "C",
+        "PHILIPPINES": "C",
+        "VIETNAM": "C"
+      },
+      "3rd": {
+        "AllChargeabilityAreasExceptThoseListed": "01APR19",
+        "CHINA-mainlandborn": "15FEB17",
+        "ELSALVADORGUATEMALAHONDURAS": "01APR19",
+        "INDIA": "01OCT09",
+        "MEXICO": "01APR19",
+        "PHILIPPINES": "01APR19",
+        "VIETNAM": "01APR19"
+      },
+      "Other Workers": {
+        "AllChargeabilityAreasExceptThoseListed": "01APR19",
+        "CHINA-mainlandborn": "01AUG08",
+        "ELSALVADORGUATEMALAHONDURAS": "01APR19",
+        "INDIA": "01OCT09",
+        "MEXICO": "01APR19",
+        "PHILIPPINES": "01APR19",
+        "VIETNAM": "01APR19"
+      },
+      "4th": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "ELSALVADORGUATEMALAHONDURAS": "01APR17",
+        "INDIA": "C",
+        "MEXICO": "15JUN18",
+        "PHILIPPINES": "C",
+        "VIETNAM": "C"
+      },
+      "Certain Religious Workers": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "ELSALVADORGUATEMALAHONDURAS": "01APR17",
+        "INDIA": "C",
+        "MEXICO": "15JUN18",
+        "PHILIPPINES": "C",
+        "VIETNAM": "C"
+      },
+      "5th Non-Regional\u00a0Center (C5 and T5)": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "08AUG15",
+        "ELSALVADORGUATEMALAHONDURAS": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C",
+        "VIETNAM": "22JUL17"
+      },
+      "5th\u00a0Regional\u00a0Center (I5 and R5)": {
+        "AllChargeabilityAreasExceptThoseListed": "C",
+        "CHINA-mainlandborn": "08AUG15",
+        "ELSALVADORGUATEMALAHONDURAS": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C",
+        "VIETNAM": "22JUL17"
+      }
+    }
+  },
+  "dates_for_filing": {
+    "family": {
+      "F1": {
+        "AllChargeabilityAreasExceptThoseListed": "08JUN15",
+        "CHINA-mainlandborn": "08JUN15",
+        "INDIA": "08JUN15",
+        "MEXICO": "01FEB00",
+        "PHILIPPINES": "08JUN12"
+      },
+      "F2A": {
+        "AllChargeabilityAreasExceptThoseListed": "01JUL20",
+        "CHINA-mainlandborn": "01JUL20",
+        "INDIA": "01JUL20",
+        "MEXICO": "01JUL20",
+        "PHILIPPINES": "01JUL20"
+      },
+      "F2B": {
+        "AllChargeabilityAreasExceptThoseListed": "15MAR16",
+        "CHINA-mainlandborn": "15MAR16",
+        "INDIA": "15MAR16",
+        "MEXICO": "08NOV99",
+        "PHILIPPINES": "01DEC11"
+      },
+      "F3": {
+        "AllChargeabilityAreasExceptThoseListed": "08MAY09",
+        "CHINA-mainlandborn": "08MAY09",
+        "INDIA": "08MAY09",
+        "MEXICO": "01AUG00",
+        "PHILIPPINES": "22AUG02"
+      },
+      "F4": {
+        "AllChargeabilityAreasExceptThoseListed": "01SEP07",
+        "CHINA-mainlandborn": "01SEP07",
+        "INDIA": "08NOV05",
+        "MEXICO": "01APR99",
+        "PHILIPPINES": "08MAY02"
+      }
+    },
+    "employment": {
+      "1st": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "01JUL18",
+        "ELSALVADORGUATEMALAHONDURAS": "C",
+        "INDIA": "01JUL18",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "2nd": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "01AUG16",
+        "ELSALVADORGUATEMALAHONDURAS": "C",
+        "INDIA": "15AUG09",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "3rd": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "01APR20",
+        "CHINA-mainlandborn": "01MAY17",
+        "ELSALVADORGUATEMALAHONDURAS": "01APR20",
+        "INDIA": "01FEB10",
+        "MEXICO": "01APR20",
+        "PHILIPPINES": "01APR20"
+      },
+      "Other Workers": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "01APR20",
+        "CHINA-mainlandborn": "01OCT08",
+        "ELSALVADORGUATEMALAHONDURAS": "01APR20",
+        "INDIA": "01FEB10",
+        "MEXICO": "01APR20",
+        "PHILIPPINES": "01APR20"
+      },
+      "4th": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "ELSALVADORGUATEMALAHONDURAS": "01OCT17",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "Certain Religious Workers": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "C",
+        "ELSALVADORGUATEMALAHONDURAS": "01OCT17",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "5th Non-Regional\u00a0Center (C5 and T5)": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "15DEC15",
+        "ELSALVADORGUATEMALAHONDURAS": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      },
+      "5th\u00a0Regional\u00a0Center (I5 and R5)": {
+        "AllChargeabilityAreas\u00a0ExceptThoseListed": "C",
+        "CHINA-mainlandborn": "15DEC15",
+        "ELSALVADORGUATEMALAHONDURAS": "C",
+        "INDIA": "C",
+        "MEXICO": "C",
+        "PHILIPPINES": "C"
+      }
+    }
+  }
+}
