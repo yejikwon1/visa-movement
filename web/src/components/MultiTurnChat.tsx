@@ -11,6 +11,7 @@ import {
 import { fetchVisaJson } from '../services/fetchVisaJson';
 import { generateSystemPrompt } from '../services/generateSystemPrompt';
 import { fetchChatViaBackend } from '../services/fetchChatViaBackend';
+import { checkIfVisaDataNeeded } from '../services/checkIfVisaDataNeeded';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -45,8 +46,17 @@ const MultiTurnChat = () => {
     setLoading(true);
 
     try {
-      const visaData = await fetchVisaJson();
-      const systemPrompt = generateSystemPrompt(visaData);
+      // STEP 1: Classify whether visa bulletin data is needed
+      const includeVisaData = await checkIfVisaDataNeeded(input);
+
+      // STEP 2: Choose appropriate prompt
+      let systemPrompt = '';
+      if (includeVisaData === 'yes') {
+        const visaData = await fetchVisaJson();
+        systemPrompt = generateSystemPrompt(visaData); // Full prompt with data
+      } else {
+        systemPrompt = `You are a helpful immigration assistant. Answer concisely without referring to visa bulletin cutoff dates.`; // Lightweight
+      }
 
       const messagesToSend: ApiMessage[] = [
         { role: 'system', content: systemPrompt },

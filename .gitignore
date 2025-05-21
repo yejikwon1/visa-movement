@@ -23,3 +23,5 @@ backend/venv/
 backend/.env
 # Python __pycache__
 backend/__pycache__/
+
+.venv/
