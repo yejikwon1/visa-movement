@@ -9,6 +9,7 @@ node_modules/
 web/node_modules/
 web/node_modules/.cache/
 web/node_modules/.cache/
+web/MachineLearning/venv/
 
 .DS_Store
 

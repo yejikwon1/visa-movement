@@ -5,19 +5,18 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Button
+  Button,
+  Box
 } from '@mui/material';
 
-import PriorityDateChecker from './components/PriorityDateChecker';
+import MainLayout from './components/MainLayout';
 import VisaTablePage from './pages/VisaTablePage';
 import About from './pages/About';
 //import SingleTurnChat from './components/singleTurnChat';
 import MultiTurnChat from './components/MultiTurnChat';
 
-
 import { fetchVisaBulletinData, fetchPermDays } from './services/visaService';
 import { VisaBulletinData } from './types/visa';
-
 
 const App = () => {
   const [vbData, setVbData] = useState<VisaBulletinData | null>(null);
@@ -37,7 +36,7 @@ const App = () => {
     <Router>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h5" sx={{ flexGrow: 1 }}>
+          <Typography variant="h5" sx={{ flexGrow: 1, color: 'white' }}>
             COOLVISATRACKER
           </Typography>
           <Button color="inherit" component={Link} to="/" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
@@ -55,14 +54,14 @@ const App = () => {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Box sx={{ mt: 2 }}>
         <Routes>
-          <Route path="/" element={<PriorityDateChecker vbData={vbData} permDays={permDays} />} />
+          <Route path="/" element={<MainLayout />} />
           <Route path="/table" element={<VisaTablePage />} />
           <Route path="/about" element={<About />} />
           <Route path="/chat" element={<MultiTurnChat />} />
         </Routes>
-      </Container>
+      </Box>
     </Router>
   );
 };

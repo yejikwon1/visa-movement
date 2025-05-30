@@ -90,7 +90,7 @@ const Home = () => {
           <Tab label="About Us" />
         </Tabs>
 
-        {tabIndex === 0 && <PriorityDateChecker vbData={vbData} permDays={permDays} />}
+        {tabIndex === 0 && <PriorityDateChecker />}
         {tabIndex === 1 && vbData && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <VisaTable data={vbData.final_action_dates.family} title="Final Action Dates - Family" />

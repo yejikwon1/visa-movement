@@ -1,17 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Container,
   Paper,
   Typography,
   TextField,
   Button,
   Box,
   CircularProgress,
+  Fade,
+  Avatar,
 } from '@mui/material';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import PersonIcon from '@mui/icons-material/Person';
+import SendIcon from '@mui/icons-material/Send';
 import { fetchVisaJson } from '../services/fetchVisaJson';
 import { generateSystemPrompt } from '../services/generateSystemPrompt';
 import { fetchChatViaBackend } from '../services/fetchChatViaBackend';
 import { checkIfVisaDataNeeded } from '../services/checkIfVisaDataNeeded';
+
+// Custom theme colors
+const themeColors = {
+  primary: '#2E3B55', // Rich navy blue
+  primaryDark: '#1A2438',
+  secondary: '#F5F7FA', // Light background
+  userMessage: '#465B82', // Light navy blue
+  assistantMessage: '#2E3B55', // Navy blue
+  userMessageBg: '#F5F7FA', // Light background
+  assistantMessageBg: '#FFFFFF', // White
+  backgroundMain: '#F5F7FA', // Light background
+  accent: '#C3973D', // Elegant gold
+  accentLight: '#D4B36A', // Light gold
+};
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -22,6 +40,40 @@ type ApiMessage = {
   role: 'user' | 'assistant' | 'system';
   content: string;
 };
+
+const WelcomeMessage = () => (
+  <Fade in timeout={1000}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 2,
+        p: 3,
+        textAlign: 'center'
+      }}
+    >
+      <Avatar
+        sx={{
+          width: 80,
+          height: 80,
+          bgcolor: themeColors.primary,
+          mb: 2,
+          boxShadow: '0 4px 12px rgba(46, 59, 85, 0.15)'
+        }}
+      >
+        <SupportAgentIcon sx={{ fontSize: 45, color: 'white' }} />
+      </Avatar>
+      <Typography variant="h5" fontWeight="bold" sx={{ color: themeColors.primary }}>
+        Hello! I'm your Immigration Assistant
+      </Typography>
+      <Typography variant="body1" sx={{ color: themeColors.userMessage, maxWidth: '80%' }}>
+        I can help you with visa-related questions and provide information about the immigration process.
+        Feel free to ask me anything!
+      </Typography>
+    </Box>
+  </Fade>
+);
 
 const MultiTurnChat = () => {
   const [input, setInput] = useState('');
@@ -46,16 +98,14 @@ const MultiTurnChat = () => {
     setLoading(true);
 
     try {
-      // STEP 1: Classify whether visa bulletin data is needed
       const includeVisaData = await checkIfVisaDataNeeded(input);
-
-      // STEP 2: Choose appropriate prompt
       let systemPrompt = '';
+      
       if (includeVisaData === 'yes') {
         const visaData = await fetchVisaJson();
-        systemPrompt = generateSystemPrompt(visaData); // Full prompt with data
+        systemPrompt = generateSystemPrompt(visaData);
       } else {
-        systemPrompt = `You are a helpful immigration assistant. Answer concisely without referring to visa bulletin cutoff dates.`; // Lightweight
+        systemPrompt = `You are a helpful immigration assistant. Answer concisely without referring to visa bulletin cutoff dates.`;
       }
 
       const messagesToSend: ApiMessage[] = [
@@ -81,44 +131,97 @@ const MultiTurnChat = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        bgcolor: themeColors.backgroundMain,
+        borderRadius: 2,
+        boxShadow: '0 0 20px rgba(0,0,0,0.05)'
+      }}
+    >
+      <Box 
+        sx={{ 
+          p: 2, 
+          borderBottom: 1, 
+          borderColor: 'rgba(46, 59, 85, 0.1)', 
+          bgcolor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          borderTopLeftRadius: 8,
+          borderTopRightRadius: 8,
+        }}
+      >
+        <Avatar sx={{ bgcolor: themeColors.primary, width: 32, height: 32 }}>
+          <SupportAgentIcon sx={{ fontSize: 20 }} />
+        </Avatar>
+        <Typography variant="h6" fontWeight="bold" sx={{ color: themeColors.primary }}>
+          Immigration Assistant
+        </Typography>
+      </Box>
+
       <Paper
-        elevation={3}
+        elevation={0}
         sx={{
-          height: '60vh',
+          flex: 1,
           overflowY: 'auto',
           p: 2,
           display: 'flex',
           flexDirection: 'column',
           gap: 1.5,
-          bgcolor: '#f5f5f5',
-          borderRadius: 2,
+          bgcolor: 'transparent',
         }}
       >
-        {chatHistory.map((msg, idx) => (
-          <Box
-            key={idx}
-            sx={{
-              alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              bgcolor: msg.role === 'user' ? '#d1ecf1' : '#d4edda',
-              px: 2,
-              py: 1,
-              borderRadius: 2,
-              maxWidth: '75%',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-            }}
-          >
-            <Typography variant="body2" fontWeight="bold" gutterBottom>
-              {msg.role === 'user' ? '🧑 You' : '🤖 Bot'}
-            </Typography>
-            <Typography variant="body1">{msg.content}</Typography>
-          </Box>
-        ))}
+        {chatHistory.length === 0 ? (
+          <WelcomeMessage />
+        ) : (
+          chatHistory.map((msg, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                bgcolor: msg.role === 'user' ? themeColors.userMessageBg : themeColors.assistantMessageBg,
+                px: 2,
+                py: 1.5,
+                borderRadius: 2,
+                maxWidth: '85%',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                boxShadow: '0 2px 4px rgba(46, 59, 85, 0.08)',
+                display: 'flex',
+                gap: 1,
+                alignItems: 'flex-start',
+                border: msg.role === 'assistant' ? '1px solid rgba(46, 59, 85, 0.1)' : 'none',
+              }}
+            >
+              <Avatar 
+                sx={{ 
+                  width: 28, 
+                  height: 28,
+                  bgcolor: msg.role === 'user' ? themeColors.userMessage : themeColors.assistantMessage
+                }}
+              >
+                {msg.role === 'user' ? (
+                  <PersonIcon sx={{ fontSize: 18 }} />
+                ) : (
+                  <SupportAgentIcon sx={{ fontSize: 18 }} />
+                )}
+              </Avatar>
+              <Box>
+                <Typography variant="body2" fontWeight="bold" sx={{ color: msg.role === 'user' ? themeColors.userMessage : themeColors.assistantMessage }}>
+                  {msg.role === 'user' ? 'You' : 'Assistant'}
+                </Typography>
+                <Typography variant="body1" sx={{ mt: 0.5, color: themeColors.userMessage }}>{msg.content}</Typography>
+              </Box>
+            </Box>
+          ))
+        )}
 
         {loading && (
           <Box sx={{ alignSelf: 'center', mt: 1 }}>
-            <CircularProgress size={24} />
+            <CircularProgress size={24} sx={{ color: themeColors.primary }} />
           </Box>
         )}
 
@@ -128,26 +231,62 @@ const MultiTurnChat = () => {
       <Box
         component="form"
         onSubmit={handleSubmit}
-        sx={{ display: 'flex', mt: 2, gap: 2 }}
+        sx={{
+          p: 2,
+          borderTop: 1,
+          borderColor: 'rgba(46, 59, 85, 0.1)',
+          bgcolor: 'white',
+          display: 'flex',
+          gap: 1,
+          borderBottomLeftRadius: 8,
+          borderBottomRightRadius: 8,
+        }}
       >
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Ask about your visa status..."
+          placeholder="Ask me anything about immigration..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
           size="small"
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: themeColors.primary,
+              },
+              '& fieldset': {
+                borderColor: 'rgba(46, 59, 85, 0.2)',
+              },
+              '&:hover fieldset': {
+                borderColor: 'rgba(46, 59, 85, 0.3)',
+              },
+            },
+            '& .MuiInputBase-input': {
+              color: themeColors.userMessage,
+            },
+          }}
         />
         <Button
           type="submit"
           variant="contained"
           disabled={!input.trim() || loading}
+          sx={{ 
+            minWidth: 'auto', 
+            px: 2,
+            bgcolor: themeColors.primary,
+            '&:hover': {
+              bgcolor: themeColors.primaryDark,
+            },
+            '&:disabled': {
+              bgcolor: 'rgba(46, 59, 85, 0.12)',
+            }
+          }}
         >
-          Send
+          <SendIcon />
         </Button>
       </Box>
-    </Container>
+    </Box>
   );
 };
 
