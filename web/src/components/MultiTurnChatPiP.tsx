@@ -14,20 +14,21 @@ import PersonIcon from '@mui/icons-material/Person';
 import SendIcon from '@mui/icons-material/Send';
 import { fetchVisaJson } from '../services/fetchVisaJson';
 import { generateSystemPrompt } from '../services/generateSystemPrompt';
-import { callOpenAI, classifyMessage } from '../services/directOpenAI';
+import { fetchChatViaBackend } from '../services/fetchChatViaBackend';
+import { checkIfVisaDataNeeded } from '../services/checkIfVisaDataNeeded';
 
 // Custom theme colors
 const themeColors = {
-  primary: '#2E3B55', // Rich navy blue
+  primary: '#2E3B55',
   primaryDark: '#1A2438',
-  secondary: '#F5F7FA', // Light background
-  userMessage: '#465B82', // Light navy blue
-  assistantMessage: '#2E3B55', // Navy blue
-  userMessageBg: '#F5F7FA', // Light background
-  assistantMessageBg: '#FFFFFF', // White
-  backgroundMain: '#F5F7FA', // Light background
-  accent: '#C3973D', // Elegant gold
-  accentLight: '#D4B36A', // Light gold
+  secondary: '#F5F7FA',
+  userMessage: '#465B82',
+  assistantMessage: '#2E3B55',
+  userMessageBg: '#F5F7FA',
+  assistantMessageBg: '#FFFFFF',
+  backgroundMain: '#F5F7FA',
+  accent: '#C3973D',
+  accentLight: '#D4B36A',
 };
 
 type ChatMessage = {
@@ -47,34 +48,33 @@ const WelcomeMessage = () => (
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 2,
-        p: 3,
+        gap: 1,
+        p: 2,
         textAlign: 'center'
       }}
     >
       <Avatar
         sx={{
-          width: 80,
-          height: 80,
+          width: 50,
+          height: 50,
           bgcolor: themeColors.primary,
-          mb: 2,
+          mb: 1,
           boxShadow: '0 4px 12px rgba(46, 59, 85, 0.15)'
         }}
       >
-        <SupportAgentIcon sx={{ fontSize: 45, color: 'white' }} />
+        <SupportAgentIcon sx={{ fontSize: 30, color: 'white' }} />
       </Avatar>
-      <Typography variant="h5" fontWeight="bold" sx={{ color: themeColors.primary }}>
-        Hello! I'm your Immigration Assistant
+      <Typography variant="h6" fontWeight="bold" sx={{ color: themeColors.primary }}>
+        Immigration Assistant
       </Typography>
-      <Typography variant="body1" sx={{ color: themeColors.userMessage, maxWidth: '80%' }}>
-        I can help you with visa-related questions and provide information about the immigration process.
-        Feel free to ask me anything!
+      <Typography variant="body2" sx={{ color: themeColors.userMessage, fontSize: '0.85rem' }}>
+        Ask me anything about visa and immigration processes.
       </Typography>
     </Box>
   </Fade>
 );
 
-const MultiTurnChat = () => {
+const MultiTurnChatPiP = () => {
   const [input, setInput] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,17 +88,6 @@ const MultiTurnChat = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Check if OpenAI API key is configured
-    if (!process.env.REACT_APP_OPENAI_API_KEY) {
-      setChatHistory([
-        ...chatHistory,
-        { role: 'user', content: input },
-        { role: 'assistant', content: '❌ OpenAI API key not configured. Please set REACT_APP_OPENAI_API_KEY in your environment variables.' }
-      ]);
-      setInput('');
-      return;
-    }
-
     const updatedHistory: ChatMessage[] = [
       ...chatHistory,
       { role: 'user', content: input },
@@ -108,7 +97,7 @@ const MultiTurnChat = () => {
     setLoading(true);
 
     try {
-      const includeVisaData = await classifyMessage(input);
+      const includeVisaData = await checkIfVisaDataNeeded(input);
       let systemPrompt = '';
       
       if (includeVisaData === 'yes') {
@@ -123,29 +112,17 @@ const MultiTurnChat = () => {
         ...updatedHistory,
       ];
 
-      const responseText = await callOpenAI(messagesToSend);
+      const responseText = await fetchChatViaBackend(messagesToSend);
 
       setChatHistory([
         ...updatedHistory,
         { role: 'assistant', content: responseText },
       ]);
     } catch (err) {
-      console.error('❌ Chat error:', err);
-      let errorMessage = '❌ Failed to get a response.';
-      
-      if (err instanceof Error) {
-        if (err.message.includes('401') || err.message.includes('unauthorized')) {
-          errorMessage = '❌ Invalid OpenAI API key. Please check your REACT_APP_OPENAI_API_KEY environment variable.';
-        } else if (err.message.includes('429')) {
-          errorMessage = '❌ Rate limit exceeded. Please try again later.';
-        } else if (err.message.includes('network') || err.message.includes('fetch')) {
-          errorMessage = '❌ Network error. Please check your internet connection and try again.';
-        }
-      }
-      
+      console.error('❌ GPT error:', err);
       setChatHistory([
         ...updatedHistory,
-        { role: 'assistant', content: errorMessage },
+        { role: 'assistant', content: '❌ Failed to get a response.' },
       ]);
     } finally {
       setLoading(false);
@@ -159,40 +136,17 @@ const MultiTurnChat = () => {
         flexDirection: 'column',
         height: '100%',
         bgcolor: themeColors.backgroundMain,
-        borderRadius: 2,
-        boxShadow: '0 0 20px rgba(0,0,0,0.05)'
       }}
     >
-      <Box 
-        sx={{ 
-          p: 2, 
-          borderBottom: 1, 
-          borderColor: 'rgba(46, 59, 85, 0.1)', 
-          bgcolor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          borderTopLeftRadius: 8,
-          borderTopRightRadius: 8,
-        }}
-      >
-        <Avatar sx={{ bgcolor: themeColors.primary, width: 32, height: 32 }}>
-          <SupportAgentIcon sx={{ fontSize: 20 }} />
-        </Avatar>
-        <Typography variant="h6" fontWeight="bold" sx={{ color: themeColors.primary }}>
-          Immigration Assistant
-        </Typography>
-      </Box>
-
       <Paper
         elevation={0}
         sx={{
           flex: 1,
           overflowY: 'auto',
-          p: 2,
+          p: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.5,
+          gap: 1,
           bgcolor: 'transparent',
         }}
       >
@@ -205,10 +159,10 @@ const MultiTurnChat = () => {
               sx={{
                 alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
                 bgcolor: msg.role === 'user' ? themeColors.userMessageBg : themeColors.assistantMessageBg,
-                px: 2,
-                py: 1.5,
+                px: 1.5,
+                py: 1,
                 borderRadius: 2,
-                maxWidth: '85%',
+                maxWidth: '90%',
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
                 boxShadow: '0 2px 4px rgba(46, 59, 85, 0.08)',
@@ -220,22 +174,25 @@ const MultiTurnChat = () => {
             >
               <Avatar 
                 sx={{ 
-                  width: 28, 
-                  height: 28,
-                  bgcolor: msg.role === 'user' ? themeColors.userMessage : themeColors.assistantMessage
+                  width: 24, 
+                  height: 24,
+                  bgcolor: msg.role === 'user' ? themeColors.userMessage : themeColors.assistantMessage,
+                  flexShrink: 0,
                 }}
               >
                 {msg.role === 'user' ? (
-                  <PersonIcon sx={{ fontSize: 18 }} />
+                  <PersonIcon sx={{ fontSize: 14 }} />
                 ) : (
-                  <SupportAgentIcon sx={{ fontSize: 18 }} />
+                  <SupportAgentIcon sx={{ fontSize: 14 }} />
                 )}
               </Avatar>
-              <Box>
-                <Typography variant="body2" fontWeight="bold" sx={{ color: msg.role === 'user' ? themeColors.userMessage : themeColors.assistantMessage }}>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="caption" fontWeight="bold" sx={{ color: msg.role === 'user' ? themeColors.userMessage : themeColors.assistantMessage }}>
                   {msg.role === 'user' ? 'You' : 'Assistant'}
                 </Typography>
-                <Typography variant="body1" sx={{ mt: 0.5, color: themeColors.userMessage }}>{msg.content}</Typography>
+                <Typography variant="body2" sx={{ mt: 0.5, color: themeColors.userMessage, fontSize: '0.85rem' }}>
+                  {msg.content}
+                </Typography>
               </Box>
             </Box>
           ))
@@ -243,7 +200,7 @@ const MultiTurnChat = () => {
 
         {loading && (
           <Box sx={{ alignSelf: 'center', mt: 1 }}>
-            <CircularProgress size={24} sx={{ color: themeColors.primary }} />
+            <CircularProgress size={20} sx={{ color: themeColors.primary }} />
           </Box>
         )}
 
@@ -254,26 +211,25 @@ const MultiTurnChat = () => {
         component="form"
         onSubmit={handleSubmit}
         sx={{
-          p: 2,
+          p: 1,
           borderTop: 1,
           borderColor: 'rgba(46, 59, 85, 0.1)',
           bgcolor: 'white',
           display: 'flex',
           gap: 1,
-          borderBottomLeftRadius: 8,
-          borderBottomRightRadius: 8,
         }}
       >
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Ask me anything about immigration..."
+          placeholder="Ask me anything..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
           size="small"
           sx={{
             '& .MuiOutlinedInput-root': {
+              fontSize: '0.85rem',
               '&.Mui-focused fieldset': {
                 borderColor: themeColors.primary,
               },
@@ -293,9 +249,10 @@ const MultiTurnChat = () => {
           type="submit"
           variant="contained"
           disabled={!input.trim() || loading}
+          size="small"
           sx={{ 
             minWidth: 'auto', 
-            px: 2,
+            px: 1.5,
             bgcolor: themeColors.primary,
             '&:hover': {
               bgcolor: themeColors.primaryDark,
@@ -305,11 +262,11 @@ const MultiTurnChat = () => {
             }
           }}
         >
-          <SendIcon />
+          <SendIcon sx={{ fontSize: 18 }} />
         </Button>
       </Box>
     </Box>
   );
 };
 
-export default MultiTurnChat;
+export default MultiTurnChatPiP; 

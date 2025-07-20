@@ -8,8 +8,13 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Box,
+  Chip,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import { parse, format } from 'date-fns';
+import { CheckCircle, Cancel, Warning } from '@mui/icons-material';
 
 interface VisaTableProps {
   data: Record<string, Record<string, string>>;
@@ -45,65 +50,213 @@ const displayCountryName = (countryCode: string) => {
   return countryCode.toUpperCase();
 };
 
+const StatusCell: React.FC<{ value: string }> = ({ value }) => {
+  const theme = useTheme();
+
+  if (value === 'C') {
+    return (
+      <Chip
+        icon={<CheckCircle />}
+        label="Current"
+        size="small"
+        sx={{
+          backgroundColor: alpha(theme.palette.success.main, 0.1),
+          color: theme.palette.success.main,
+          borderColor: alpha(theme.palette.success.main, 0.3),
+          border: '1px solid',
+          fontWeight: 600,
+          '& .MuiChip-icon': {
+            color: theme.palette.success.main,
+          },
+        }}
+      />
+    );
+  }
+
+  if (value === 'U') {
+    return (
+      <Chip
+        icon={<Cancel />}
+        label="Unavailable"
+        size="small"
+        sx={{
+          backgroundColor: alpha(theme.palette.error.main, 0.1),
+          color: theme.palette.error.main,
+          borderColor: alpha(theme.palette.error.main, 0.3),
+          border: '1px solid',
+          fontWeight: 600,
+          '& .MuiChip-icon': {
+            color: theme.palette.error.main,
+          },
+        }}
+      />
+    );
+  }
+
+  // Date value
+  return (
+    <Typography
+      variant="body2"
+      sx={{
+        fontWeight: 500,
+        color: '#475569',
+        fontSize: '0.875rem',
+        fontFamily: 'monospace',
+      }}
+    >
+      {formatToMonthYearDate(value)}
+    </Typography>
+  );
+};
+
 const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
+  const theme = useTheme();
   const categories = Object.keys(data);
   const countries = Object.keys(data[categories[0]]);
 
   return (
-    <TableContainer component={Paper} sx={{ mb: 5, px: 3, py: 2 }}>
-      <Typography variant="h5" align="center" sx={{ pt: 2, pb: 2 }}>
-        {title}
-      </Typography>
-      <Table
-        sx={{
-          border: '2px solid black',
-          '& .MuiTableCell-root': {
-            border: '2px solid black',
+    <Box sx={{ width: '100%', overflow: 'hidden' }}>
+      {title && (
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            color: '#1E293B',
+            fontWeight: 700,
             textAlign: 'center',
-          },
+          }}
+        >
+          {title}
+        </Typography>
+      )}
+      
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          borderRadius: 3,
+          overflow: 'hidden',
+          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(10px)',
         }}
       >
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem', py: 1.5 }}>
-              Category
-            </TableCell>
-            {countries.map((country) => (
+        <Table
+          sx={{
+            '& .MuiTableCell-root': {
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              padding: '12px 16px',
+            },
+          }}
+        >
+          <TableHead>
+            <TableRow
+              sx={{
+                background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(59, 130, 246, 0.05))',
+              }}
+            >
               <TableCell
-                key={country}
                 sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1rem',
-                  py: 1.5,
-                  whiteSpace: 'nowrap',
+                  fontWeight: 700,
+                  fontSize: '0.875rem',
+                  color: '#1E293B',
+                  textAlign: 'center',
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 1,
+                  background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(59, 130, 246, 0.05))',
+                  backdropFilter: 'blur(10px)',
+                  borderRight: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
                 }}
               >
-                {displayCountryName(country)}
+                Category
               </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {categories.map((category) => (
-            <TableRow key={category}>
-              <TableCell sx={{ fontSize: '1rem', py: 1.2 }}>{category}</TableCell>
-              {countries.map((country) => {
-                const normalizedCountry = country.replace(/\s/g, '');
-                const rawDate = data[category][normalizedCountry] || data[category][country];
-                return (
-                  <TableCell
-                    key={country}
-                    sx={{ fontSize: '1rem', py: 1.2, whiteSpace: 'nowrap' }}
+              {countries.map((country, index) => (
+                <TableCell
+                  key={country}
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: '0.875rem',
+                    color: '#1E293B',
+                    textAlign: 'center',
+                    minWidth: '120px',
+                    whiteSpace: 'nowrap',
+                    ...(index === 0 && {
+                      borderLeft: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    }),
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '0.75rem',
+                      lineHeight: 1.3,
+                      color: '#64748B',
+                    }}
                   >
-                    {formatToMonthYearDate(rawDate)}
-                  </TableCell>
-                );
-              })}
+                    {displayCountryName(country)}
+                  </Typography>
+                </TableCell>
+              ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {categories.map((category, rowIndex) => (
+              <TableRow
+                key={category}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.02),
+                  },
+                  '&:nth-of-type(even)': {
+                    backgroundColor: alpha(theme.palette.grey[100], 0.3),
+                  },
+                }}
+              >
+                <TableCell
+                  sx={{
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: '#374151',
+                    textAlign: 'center',
+                    position: 'sticky',
+                    left: 0,
+                    zIndex: 1,
+                    background: rowIndex % 2 === 0 
+                      ? alpha(theme.palette.grey[100], 0.3)
+                      : 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    borderRight: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    minWidth: '100px',
+                  }}
+                >
+                  {category}
+                </TableCell>
+                {countries.map((country, colIndex) => {
+                  const normalizedCountry = country.replace(/\s/g, '');
+                  const rawDate = data[category][normalizedCountry] || data[category][country];
+                  return (
+                    <TableCell
+                      key={country}
+                      sx={{
+                        textAlign: 'center',
+                        minWidth: '120px',
+                        ...(colIndex === 0 && {
+                          borderLeft: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        }),
+                      }}
+                    >
+                      <StatusCell value={rawDate} />
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 

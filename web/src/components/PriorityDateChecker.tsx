@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Paper, Typography, FormControl, InputLabel, Select, MenuItem, Box, Button, Alert,
-  Card, CardContent, SelectChangeEvent, Tabs, Tab, Divider, CssBaseline, Grid, CircularProgress
+  Card, CardContent, SelectChangeEvent, Divider, CssBaseline, Grid, CircularProgress
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -123,7 +123,6 @@ interface PriorityDateCheckerProps {
 // as per the full App code you provided that I refactored.
 // So, it does not take props.
 const PriorityDateChecker: React.FC = () => {
-  const [tab, setTab] = useState(0);
   const [visaType, setVisaType] = useState<'family' | 'employment'>('employment');
   const [category, setCategory] = useState(categoriesMap[visaType][0]?.value || '');
   const [chargeabilityArea, setChargeabilityArea] = useState(chargeabilityAreas[0].value);
@@ -369,22 +368,77 @@ const PriorityDateChecker: React.FC = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <CssBaseline />
-      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.100', py: { xs: 2, sm: 4 } }}>
-        <Box sx={{ width: '100%' }}>
-          <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-            <Box sx={{ bgcolor: 'primary.main', p: {xs: 2, sm: 3}, color: 'white' }}>
-              <Typography variant="h4" component="h1" align="center" fontWeight={700} sx={{ color: 'white' }}>
-                Visa Bulletin Analyzer & Forecaster
-              </Typography>
-            </Box>
-            <Tabs value={tab} onChange={(_,newVal)=>{setTab(newVal);if(newVal!==0){setResults(null);setError(null);}}} variant="fullWidth" indicatorColor="secondary" textColor="secondary" sx={{borderBottom:1,borderColor:'divider'}}>
-              <Tab label="Priority Date Checker" sx={{fontWeight:tab===0?600:400,textTransform:'none',fontSize:{xs:'0.875rem',sm:'1rem'}}} />
-              <Tab label="About & Disclaimer" sx={{fontWeight:tab===1?600:400,textTransform:'none',fontSize:{xs:'0.875rem',sm:'1rem'}}} />
-            </Tabs>
-            <Box p={{ xs: 2, sm: 3 }}>
-              {tab === 0 && (
-                <Grid container spacing={2.5}>
+      <Box sx={{ width: '100%' }}>
+        {/* Header Section */}
+        <Box
+          sx={{
+            textAlign: 'center',
+            mb: 4,
+            py: 2,
+            background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
+            borderRadius: 3,
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '200%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
+              animation: 'shimmer 3s infinite',
+              '@keyframes shimmer': {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' },
+              },
+            },
+          }}
+        >
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: '1.75rem', sm: '2.5rem' },
+              background: 'linear-gradient(135deg, #1E3A8A, #3B82F6, #7C3AED)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              mb: 1,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Visa Bulletin Analyzer
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: '#64748B',
+              fontWeight: 500,
+              fontSize: { xs: '0.875rem', sm: '1rem' },
+            }}
+          >
+            Check your priority date status & get AI-powered forecasts
+          </Typography>
+        </Box>
+
+
+
+        {/* Main Content */}
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            overflow: 'hidden',
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
+          }}
+        >
+          <Box p={{ xs: 3, sm: 4 }}>
+              <Grid container spacing={2.5}>
                   <Grid item xs={12} sm={6} md={4}>
                     <FormControl fullWidth variant="outlined">
                       <InputLabel id="vt-lbl" sx={{ color: '#2E3B55' }}>Visa Type</InputLabel>
@@ -584,39 +638,13 @@ const PriorityDateChecker: React.FC = () => {
                     <Typography component="span" color="#465B82">
                       Always consult a qualified immigration attorney for advice specific to your situation. Data accuracy or completeness is not guaranteed.
                     </Typography>
-                  </Alert>
+                                    </Alert>
                 </Grid>
-              )}
-              {tab === 1 && ( 
-                <Box>
-                  <Typography variant="h5" gutterBottom fontWeight={600} color="#2E3B55">About This Tool</Typography>
-                  <Typography paragraph color="#465B82" sx={{lineHeight:1.7}}>
-                    This Visa Bulletin Analyzer & Forecaster helps check priority date status against the current Visa Bulletin and provides experimental forecasts for selected employment and family-based categories (primarily for "All Chargeability Areas Except Those Listed" - ROW).
-                  </Typography>
-                  
-                  <Typography variant="h6" gutterBottom fontWeight={500} sx={{mt:2, color: '#2E3B55'}}>Current Status Check:</Typography>
-                  <Typography paragraph color="#465B82" sx={{lineHeight:1.7}}>
-                    Uses live data (fetched from a periodically updated JSON source via JSONBin) for "Final Action Dates" and "Dates for Filing". The tool also considers average PERM processing days for employment-based cases to estimate an actual priority date if the input date is for PERM filing.
-                  </Typography>
-                  
-                  <Typography variant="h6" gutterBottom fontWeight={500} sx={{mt:2, color: '#2E3B55'}}>Forecast Logic (ROW Categories Primarily):</Typography>
-                  <Typography component="div" color="#465B82" sx={{lineHeight:1.7}}>
-                    <ul>
-                      <li>Forecasts are based on pre-generated monthly cutoff date predictions from an offline model (e.g., Facebook's Prophet) trained on historical Visa Bulletin data for each category. These predictions are stored in `employment_forecast.json` and `family_forecast.json`.</li>
-                      <li>The app analyzes recent trends from these *forecasted* dates (e.g., average monthly advancement over the last 12 forecasted months) to project when your priority date might be reached for filing.</li>
-                      <li>Subsequent windows for Final Action and Green Card in Hand are estimated using fixed time buffers (e.g., 9 months from Filing to Final Action, then 4 months to Green Card).</li>
-                      <li>The timeline also considers the estimated PERM approval date for employment-based cases, ensuring predictions don't start before PERM is likely approved or before the current date.</li>
-                      <li>A conservatism buffer might be applied if your Priority Date falls within the immediate range of the pre-generated forecast to account for short-term volatility.</li>
-                    </ul>
-                  </Typography>
-                </Box>
-              )}
-            </Box>
+              </Box>
           </Paper>
         </Box>
-      </Box>
-    </LocalizationProvider>
-  );
-};
+      </LocalizationProvider>
+    );
+  };
 
 export default PriorityDateChecker;
