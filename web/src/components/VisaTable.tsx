@@ -115,7 +115,7 @@ const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
   const countries = Object.keys(data[categories[0]]);
 
   return (
-    <Box sx={{ width: '100%', overflow: 'hidden' }}>
+    <Box sx={{ width: '100%' }}>
       {title && (
         <Typography
           variant="h6"
@@ -135,14 +135,16 @@ const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
         elevation={0}
         sx={{
           borderRadius: 3,
-          overflow: 'hidden',
+          overflow: 'auto', // Changed from 'hidden' to 'auto' for proper horizontal scrolling
           border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
           background: 'rgba(255, 255, 255, 0.9)',
           backdropFilter: 'blur(10px)',
+          maxHeight: '600px', // Add max height to prevent very tall tables
         }}
       >
         <Table
           sx={{
+            minWidth: Math.max(800, (countries.length + 1) * 150), // Dynamic minimum width based on column count
             '& .MuiTableCell-root': {
               borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
               padding: '12px 16px',
@@ -163,10 +165,12 @@ const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
                   textAlign: 'center',
                   position: 'sticky',
                   left: 0,
-                  zIndex: 1,
+                  zIndex: 2, // Higher z-index for sticky header
                   background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(59, 130, 246, 0.05))',
                   backdropFilter: 'blur(10px)',
                   borderRight: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
+                  minWidth: '120px',
+                  width: '120px',
                 }}
               >
                 Category
@@ -179,7 +183,8 @@ const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
                     fontSize: '0.875rem',
                     color: '#1E293B',
                     textAlign: 'center',
-                    minWidth: '120px',
+                    minWidth: '140px',
+                    width: '140px',
                     whiteSpace: 'nowrap',
                     ...(index === 0 && {
                       borderLeft: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
@@ -228,7 +233,9 @@ const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
                       : 'rgba(255, 255, 255, 0.9)',
                     backdropFilter: 'blur(10px)',
                     borderRight: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    minWidth: '100px',
+                    minWidth: '120px',
+                    width: '120px',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {category}
@@ -241,7 +248,9 @@ const VisaTable: React.FC<VisaTableProps> = ({ data, title }) => {
                       key={country}
                       sx={{
                         textAlign: 'center',
-                        minWidth: '120px',
+                        minWidth: '140px',
+                        width: '140px',
+                        whiteSpace: 'nowrap',
                         ...(colIndex === 0 && {
                           borderLeft: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
                         }),

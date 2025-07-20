@@ -29,7 +29,6 @@ const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
-const years = Array.from({ length: 10 }, (_, i) => (2016 + i).toString());
 
 // ✅ Fiscal Year 계산 함수
 const getFiscalYear = (year: string, month: string): string => {
@@ -37,18 +36,94 @@ const getFiscalYear = (year: string, month: string): string => {
   return monthIndex >= 9 ? (parseInt(year) + 1).toString() : year;
 };
 
+interface AvailableData {
+  [year: string]: string[]; // year -> available months for that year
+}
+
 const VisaTablePage = () => {
   const [year, setYear] = useState('2025');
-  const [month, setMonth] = useState('May');
+  const [month, setMonth] = useState('');
   const [vbData, setVbData] = useState<VisaBulletinData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [availableData, setAvailableData] = useState<AvailableData>({});
+  const [dataLoading, setDataLoading] = useState(true);
   const theme = useTheme();
 
+  // Load available data from index.json
+  useEffect(() => {
+    const loadAvailableData = async () => {
+      try {
+        setDataLoading(true);
+        const response = await fetch('/parsed_json/index.json');
+        if (!response.ok) throw new Error('Failed to load index');
+        
+        const indexData: string[] = await response.json();
+        const parsedData: AvailableData = {};
+        
+        indexData.forEach((entry) => {
+          // Parse "FY2025/August-2025" format
+          const match = entry.match(/FY\d{4}\/(.+)-(\d{4})/);
+          if (match) {
+            const [, month, year] = match;
+            const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1).toLowerCase();
+            
+            if (!parsedData[year]) {
+              parsedData[year] = [];
+            }
+            parsedData[year].push(capitalizedMonth);
+          }
+        });
+        
+        setAvailableData(parsedData);
+        
+        // Set initial values to the most recent available data
+        const availableYears = Object.keys(parsedData).sort((a, b) => parseInt(b) - parseInt(a));
+        if (availableYears.length > 0) {
+          const latestYear = availableYears[0];
+          const availableMonthsForLatestYear = parsedData[latestYear];
+          if (availableMonthsForLatestYear.length > 0) {
+            // Sort months by order in the months array
+            const sortedMonths = availableMonthsForLatestYear.sort((a, b) => {
+              return months.indexOf(b) - months.indexOf(a); // Latest month first
+            });
+            setYear(latestYear);
+            setMonth(sortedMonths[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load available data:', err);
+        setError('Failed to load available data.');
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    loadAvailableData();
+  }, []);
+
   const handleMonthChange = (e: SelectChangeEvent) => setMonth(e.target.value);
-  const handleYearChange = (e: SelectChangeEvent) => setYear(e.target.value);
+  
+  const handleYearChange = (e: SelectChangeEvent) => {
+    const newYear = e.target.value;
+    setYear(newYear);
+    
+    // Reset month to first available month for the new year
+    const availableMonthsForYear = availableData[newYear] || [];
+    if (availableMonthsForYear.length > 0) {
+      // Sort months by order in the months array and select the latest
+      const sortedMonths = availableMonthsForYear.sort((a, b) => {
+        return months.indexOf(b) - months.indexOf(a); // Latest month first
+      });
+      setMonth(sortedMonths[0]);
+    } else {
+      setMonth('');
+    }
+  };
 
   useEffect(() => {
+    if (!month || !year || dataLoading) return;
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -72,7 +147,35 @@ const VisaTablePage = () => {
     };
 
     fetchData();
-  }, [month, year]);
+  }, [month, year, dataLoading]);
+
+  // Get available years and months for dropdowns
+  const availableYears = Object.keys(availableData).sort((a, b) => parseInt(b) - parseInt(a));
+  const availableMonthsForCurrentYear = availableData[year] || [];
+
+  if (dataLoading) {
+    return (
+      <Box
+        sx={{
+          minHeight: 'calc(100vh - 70px)',
+          background: 'linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress
+            size={60}
+            sx={{ color: '#3B82F6', mb: 2 }}
+          />
+          <Typography variant="h6" sx={{ color: '#64748B' }}>
+            Loading available data...
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -181,7 +284,7 @@ const VisaTablePage = () => {
                           },
                         }}
                       >
-                        {years.map((y) => (
+                        {availableYears.map((y) => (
                           <MenuItem key={y} value={y}>{y}</MenuItem>
                         ))}
                       </Select>
@@ -207,13 +310,31 @@ const VisaTablePage = () => {
                           },
                         }}
                       >
-                        {months.map((m) => (
-                          <MenuItem key={m} value={m}>{m}</MenuItem>
-                        ))}
+                        {availableMonthsForCurrentYear
+                          .sort((a, b) => months.indexOf(b) - months.indexOf(a)) // Sort by month order, latest first
+                          .map((m) => (
+                            <MenuItem key={m} value={m}>{m}</MenuItem>
+                          ))}
                       </Select>
                     </FormControl>
                   </Grid>
                 </Grid>
+
+                {availableMonthsForCurrentYear.length === 0 && (
+                  <Alert
+                    severity="info"
+                    sx={{
+                      mt: 3,
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(59, 130, 246, 0.1)',
+                      border: '1px solid rgba(59, 130, 246, 0.2)',
+                    }}
+                  >
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      No data available for {year}. Please select a different year.
+                    </Typography>
+                  </Alert>
+                )}
               </Paper>
             </Slide>
 
@@ -271,127 +392,127 @@ const VisaTablePage = () => {
                     </Typography>
                   </Box>
 
-                  <Grid container spacing={4}>
-                    <Grid item xs={12} lg={6}>
-                      <Card
-                        elevation={0}
+                  {/* Family-Based Categories - Full Width */}
+                  <Card
+                    elevation={0}
+                    sx={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: 4,
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
+                      overflow: 'hidden',
+                      mb: 6,
+                    }}
+                  >
+                    <CardContent sx={{ p: 0 }}>
+                      <Box
                         sx={{
-                          background: 'rgba(255, 255, 255, 0.9)',
-                          backdropFilter: 'blur(20px)',
-                          borderRadius: 4,
-                          border: '1px solid rgba(255, 255, 255, 0.3)',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
-                          overflow: 'hidden',
-                          mb: 4,
+                          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(124, 58, 237, 0.1))',
+                          p: 3,
+                          borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
                         }}
                       >
-                        <CardContent sx={{ p: 0 }}>
-                          <Box
-                            sx={{
-                              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(124, 58, 237, 0.1))',
-                              p: 3,
-                              borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
-                            }}
-                          >
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                fontWeight: 700,
-                                color: '#1E293B',
-                              }}
-                            >
-                              Family-Based Categories
-                            </Typography>
-                          </Box>
-                          <Box sx={{ p: 3 }}>
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 600,
-                                color: '#475569',
-                                mb: 2,
-                              }}
-                            >
-                              Final Action Dates
-                            </Typography>
-                            <VisaTable data={vbData.final_action_dates.family} title="" />
-                            <Divider sx={{ my: 3 }} />
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 600,
-                                color: '#475569',
-                                mb: 2,
-                              }}
-                            >
-                              Dates for Filing
-                            </Typography>
-                            <VisaTable data={vbData.dates_for_filing.family} title="" />
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            fontWeight: 700,
+                            color: '#1E293B',
+                          }}
+                        >
+                          Family-Based Categories
+                        </Typography>
+                      </Box>
+                      <Box sx={{ p: 3 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 600,
+                            color: '#475569',
+                            mb: 2,
+                          }}
+                        >
+                          Final Action Dates
+                        </Typography>
+                        <Box sx={{ mb: 4 }}>
+                          <VisaTable data={vbData.final_action_dates.family} title="" />
+                        </Box>
+                        <Divider sx={{ my: 4 }} />
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 600,
+                            color: '#475569',
+                            mb: 2,
+                          }}
+                        >
+                          Dates for Filing
+                        </Typography>
+                        <VisaTable data={vbData.dates_for_filing.family} title="" />
+                      </Box>
+                    </CardContent>
+                  </Card>
 
-                    <Grid item xs={12} lg={6}>
-                      <Card
-                        elevation={0}
+                  {/* Employment-Based Categories - Full Width */}
+                  <Card
+                    elevation={0}
+                    sx={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: 4,
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
+                      overflow: 'hidden',
+                      mb: 4,
+                    }}
+                  >
+                    <CardContent sx={{ p: 0 }}>
+                      <Box
                         sx={{
-                          background: 'rgba(255, 255, 255, 0.9)',
-                          backdropFilter: 'blur(20px)',
-                          borderRadius: 4,
-                          border: '1px solid rgba(255, 255, 255, 0.3)',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
-                          overflow: 'hidden',
-                          mb: 4,
+                          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1))',
+                          p: 3,
+                          borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
                         }}
                       >
-                        <CardContent sx={{ p: 0 }}>
-                          <Box
-                            sx={{
-                              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1))',
-                              p: 3,
-                              borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
-                            }}
-                          >
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                fontWeight: 700,
-                                color: '#1E293B',
-                              }}
-                            >
-                              Employment-Based Categories
-                            </Typography>
-                          </Box>
-                          <Box sx={{ p: 3 }}>
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 600,
-                                color: '#475569',
-                                mb: 2,
-                              }}
-                            >
-                              Final Action Dates
-                            </Typography>
-                            <VisaTable data={vbData.final_action_dates.employment} title="" />
-                            <Divider sx={{ my: 3 }} />
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 600,
-                                color: '#475569',
-                                mb: 2,
-                              }}
-                            >
-                              Dates for Filing
-                            </Typography>
-                            <VisaTable data={vbData.dates_for_filing.employment} title="" />
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  </Grid>
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            fontWeight: 700,
+                            color: '#1E293B',
+                          }}
+                        >
+                          Employment-Based Categories
+                        </Typography>
+                      </Box>
+                      <Box sx={{ p: 3 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 600,
+                            color: '#475569',
+                            mb: 2,
+                          }}
+                        >
+                          Final Action Dates
+                        </Typography>
+                        <Box sx={{ mb: 4 }}>
+                          <VisaTable data={vbData.final_action_dates.employment} title="" />
+                        </Box>
+                        <Divider sx={{ my: 4 }} />
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 600,
+                            color: '#475569',
+                            mb: 2,
+                          }}
+                        >
+                          Dates for Filing
+                        </Typography>
+                        <VisaTable data={vbData.dates_for_filing.employment} title="" />
+                      </Box>
+                    </CardContent>
+                  </Card>
                 </Box>
               </Slide>
             )}
