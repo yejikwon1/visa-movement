@@ -53,12 +53,7 @@ const About: React.FC = () => {
     },
   ];
 
-  const stats = [
-    { number: '10K+', label: 'Users Helped' },
-    { number: '95%', label: 'Accuracy Rate' },
-    { number: '24/7', label: 'Availability' },
-    { number: '5s', label: 'Response Time' },
-  ];
+
 
   return (
     <Box
@@ -231,59 +226,7 @@ const About: React.FC = () => {
               </Grid>
             </Slide>
 
-            {/* Stats Section */}
-            <Slide direction="up" in mountOnEnter timeout={900}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: { xs: 3, md: 4 },
-                  mb: 6,
-                  background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(124, 58, 237, 0.05))',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 4,
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                }}
-              >
-                <Typography
-                  variant="h4"
-                  sx={{
-                    textAlign: 'center',
-                    fontWeight: 700,
-                    color: '#1E293B',
-                    mb: 4,
-                  }}
-                >
-                  Trusted by Thousands
-                </Typography>
-                <Grid container spacing={4}>
-                  {stats.map((stat, index) => (
-                    <Grid item xs={6} md={3} key={index}>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography
-                          variant="h3"
-                          sx={{
-                            fontWeight: 800,
-                            color: '#1E3A8A',
-                            mb: 1,
-                          }}
-                        >
-                          {stat.number}
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            color: '#64748B',
-                            fontWeight: 500,
-                          }}
-                        >
-                          {stat.label}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Paper>
-            </Slide>
+
 
             {/* Technology Stack */}
             <Slide direction="up" in mountOnEnter timeout={1000}>
