@@ -11,6 +11,7 @@ import { parse, format, isValid, addMonths, max, startOfMonth } from 'date-fns';
 
 import employmentForecastData from '../employment_forecast.json';
 import familyForecastData from '../family_forecast.json';
+import VisaTimeline from './VisaTimeline';
 
 
 interface ForecastEntry {
@@ -264,9 +265,9 @@ const PriorityDateChecker: React.FC = () => {
             newResultsData.predictedFilingDate = `Dates for Filing: Current${visaType === 'employment' ? ' (actual filing subject to PERM approval)' : ''}.`;
             const actualFilingPossibleMonth = earliestActionStartDate;
             const finalActionEstimate = addMonths(actualFilingPossibleMonth, BUFFER_MONTHS_FILING_TO_FINAL_ACTION);
-            newResultsData.predictedFinalActionDate = format(finalActionEstimate, 'MMM yy');
+            newResultsData.predictedFinalActionDate = format(finalActionEstimate, 'dd/MM/yyyy');
             const gcEstimate = addMonths(finalActionEstimate, BUFFER_MONTHS_FINAL_ACTION_TO_GC);
-            newResultsData.greenCardInHand = format(gcEstimate, 'MMM yy');
+            newResultsData.greenCardInHand = format(gcEstimate, 'dd/MM/yyyy');
           } else if (newResultsData.filing.cutoffText !== 'Unavailable' &&
                      !newResultsData.filing.cutoffText.startsWith('Invalid Date') &&
                      !newResultsData.filing.cutoffText.startsWith('N/A')) {
@@ -290,7 +291,7 @@ const PriorityDateChecker: React.FC = () => {
                 averageMonthlyAdvanceInDays = Math.max(15, Math.min(averageMonthlyAdvanceInDays, 180));
                 const lastKnownForecastPoint = knownForecastEntries[knownForecastEntries.length - 1];
                 let actualFilingPossibleMonth: Date;
-                let filingWindowMessageSuffix = visaType === 'employment' ? " (actual filing subject to PERM approval, if applicable)" : "";
+                let filingWindowMessageSuffix = "";
 
                 if (pdOrdinal > lastKnownForecastPoint.ordinal && averageMonthlyAdvanceInDays > 0) {
                   const remainingDaysToAdvance = pdOrdinal - lastKnownForecastPoint.ordinal;
@@ -298,7 +299,7 @@ const PriorityDateChecker: React.FC = () => {
                   let baseProjectionDate = startOfMonth(addMonths(new Date(lastKnownForecastPoint.monthYearDate), 1));
                   const prophetPredictedFilingMonth = addMonths(baseProjectionDate, monthsToReachPdForFiling);
                   actualFilingPossibleMonth = max([prophetPredictedFilingMonth, earliestActionStartDate]);
-                  newResultsData.predictedFilingDate = format(actualFilingPossibleMonth, 'MMM yy') + filingWindowMessageSuffix;
+                                      newResultsData.predictedFilingDate = format(actualFilingPossibleMonth, 'dd/MM/yyyy') + filingWindowMessageSuffix;
                 } else if (pdOrdinal <= lastKnownForecastPoint.ordinal) {
                   let prophetForecastMonthForPD = lastKnownForecastPoint.monthYearDate;
                   for (const entry of knownForecastEntries) {
@@ -307,7 +308,7 @@ const PriorityDateChecker: React.FC = () => {
                   prophetForecastMonthForPD = startOfMonth(prophetForecastMonthForPD);
                   const adjustedProphetFilingMonth = addMonths(prophetForecastMonthForPD, CONSERVATISM_BUFFER_MONTHS_FOR_PROPHET_FILING);
                   actualFilingPossibleMonth = max([adjustedProphetFilingMonth, earliestActionStartDate]);
-                  newResultsData.predictedFilingDate = format(actualFilingPossibleMonth, 'MMM yy') + ` (PD within forecast range, adj. by +${CONSERVATISM_BUFFER_MONTHS_FOR_PROPHET_FILING}mo buffer)${filingWindowMessageSuffix}`;
+                  newResultsData.predictedFilingDate = format(actualFilingPossibleMonth, 'dd/MM/yyyy');
                 } else {
                   newResultsData.predictedFilingDate = "Prediction N/A (no positive trend/PD too far).";
                   actualFilingPossibleMonth = earliestActionStartDate;
@@ -315,9 +316,9 @@ const PriorityDateChecker: React.FC = () => {
                 
                 if (newResultsData.predictedFilingDate && !newResultsData.predictedFilingDate.toLowerCase().includes("n/a")) {
                   const finalActionDateReached = addMonths(actualFilingPossibleMonth, BUFFER_MONTHS_FILING_TO_FINAL_ACTION);
-                  newResultsData.predictedFinalActionDate = format(finalActionDateReached, 'MMM yy');
+                  newResultsData.predictedFinalActionDate = format(finalActionDateReached, 'dd/MM/yyyy');
                   const greenCardDateReached = addMonths(finalActionDateReached, BUFFER_MONTHS_FINAL_ACTION_TO_GC);
-                  newResultsData.greenCardInHand = format(greenCardDateReached, 'MMM yy');
+                  newResultsData.greenCardInHand = format(greenCardDateReached, 'dd/MM/yyyy');
                 } else {
                     newResultsData.predictedFinalActionDate = "N/A due to filing date prediction.";
                     newResultsData.greenCardInHand = "N/A due to filing date prediction.";
@@ -580,51 +581,11 @@ const PriorityDateChecker: React.FC = () => {
                   )}
                   {results && !loadingAction && (
                     <Grid item xs={12} sx={{mt:2}}>
-                      <Card variant="outlined" sx={{borderRadius:2}}>
-                        <CardContent>
-                          <Typography variant="h6" fontWeight={600} gutterBottom color="#2E3B55">Results:</Typography>
-                          <Divider sx={{mb:2}}/>
-                          {results.finalAction && (
-                            <Box mb={1.5}>
-                              <Typography component="span" fontWeight="bold" color="#2E3B55">Final Action Status:</Typography>
-                              <Typography component="span" color="#465B82"> {results.finalAction.statusText}</Typography>
-                            </Box>
-                          )}
-                          {results.filing && (
-                            <Box mb={1.5}>
-                              <Typography component="span" fontWeight="bold" color="#2E3B55">Dates for Filing Status:</Typography>
-                              <Typography component="span" color="#465B82"> {results.filing.statusText}</Typography>
-                            </Box>
-                          )}
-                          {visaType === 'employment' && results.expectedPermDate && (
-                            <Box mb={1.5}>
-                              <Typography component="span" fontWeight="bold" color="#2E3B55">Est. PERM Approval / Actual PD (if PD input was PERM date):</Typography>
-                              <Typography component="span" color="#465B82"> 📅 {results.expectedPermDate}</Typography>
-                            </Box>
-                          )}
-                          {results.predictedFilingDate && (
-                            <Box mb={1.5}>
-                              <Typography component="span" fontWeight="bold" color="#2E3B55">Est. Filing Window (Forecast):</Typography>
-                              <Typography component="span" color="#465B82"> 📆 {results.predictedFilingDate}</Typography>
-                            </Box>
-                          )}
-                          {results.predictedFinalActionDate && (
-                            <Box mb={1.5}>
-                              <Typography component="span" fontWeight="bold" color="#2E3B55">Est. Final Action Window (Forecast):</Typography>
-                              <Typography component="span" color="#465B82"> 📅 {results.predictedFinalActionDate}</Typography>
-                            </Box>
-                          )}
-                          {results.greenCardInHand && (
-                            <Box mb={1.5}>
-                              <Typography component="span" fontWeight="bold" color="#2E3B55">Est. Green Card In Hand Window (Forecast):</Typography>
-                              <Typography component="span" color="#465B82"> 💳 {results.greenCardInHand}</Typography>
-                            </Box>
-                          )}
-                          {!results.finalAction && !results.filing && !results.expectedPermDate && !results.predictedFilingDate && !results.predictedFinalActionDate && !results.greenCardInHand && (
-                            <Typography color="#465B82">No results to display for current selection or an error occurred.</Typography>
-                          )}
-                        </CardContent>
-                      </Card>
+                      <VisaTimeline 
+                        results={results} 
+                        visaType={visaType} 
+                        priorityDate={priorityDate} 
+                      />
                     </Grid>
                   )}
 

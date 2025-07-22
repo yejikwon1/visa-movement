@@ -26,7 +26,7 @@ const MainLayout: React.FC = () => {
                 elevation={0}
                 sx={{
                   width: '80%',
-                  maxWidth: '700px',
+                  maxWidth: '1000px',
                   background: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(20px)',
                   borderRadius: 4,
