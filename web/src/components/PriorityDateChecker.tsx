@@ -412,16 +412,7 @@ const PriorityDateChecker: React.FC = () => {
           >
             Visa Bulletin Analyzer
           </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              color: '#64748B',
-              fontWeight: 500,
-              fontSize: { xs: '0.875rem', sm: '1rem' },
-            }}
-          >
-            Check your priority date status & get AI-powered forecasts
-          </Typography>
+
         </Box>
 
 
