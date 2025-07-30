@@ -119,35 +119,7 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
   const getStepStatus = (index: number, result: any): 'completed' | 'current' | 'upcoming' | 'unavailable' => {
     if (!result) return 'unavailable';
     
-    const currentDate = new Date();
-    const yearsFromPriorityDate = priorityDate ? (currentDate.getTime() - priorityDate.getTime()) / (1000 * 60 * 60 * 24 * 365) : 0;
-    const isVeryOldPriorityDate = yearsFromPriorityDate > 4;
-    
     if (index === 0) return 'completed'; // Priority Date is always completed
-    
-    // For very old priority dates, mark more steps as completed
-    if (isVeryOldPriorityDate) {
-      if (index === 1 && visaType === 'employment') {
-        // PERM step - likely completed for old priority dates
-        return 'completed';
-      }
-      
-      // Filing step
-      if ((visaType === 'employment' && index === 2) || (visaType === 'family' && index === 1)) {
-        return 'completed';
-      }
-      
-      // Final Action step
-      if ((visaType === 'employment' && index === 3) || (visaType === 'family' && index === 2)) {
-        return 'completed';
-      }
-      
-      // Green Card step - likely completed for very old priority dates
-      if ((visaType === 'employment' && index === 4) || (visaType === 'family' && index === 3)) {
-        return 'completed';
-      }
-    }
-    
     if (index === 1 && visaType === 'employment') {
       // PERM step
       return results.expectedPermDate ? 'current' : 'upcoming';
@@ -157,7 +129,6 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
     if ((visaType === 'employment' && index === 2) || (visaType === 'family' && index === 1)) {
       if (results.filing?.isCurrent) return 'current';
       if (results.predictedFilingDate?.includes('Current')) return 'current';
-      if (results.predictedFilingDate?.includes('Likely completed by')) return 'completed';
       return 'upcoming';
     }
     
@@ -195,27 +166,19 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
     }
 
     // Filing Window
-    const filingDate = results.filing?.isCurrent 
-      ? 'Current'  // JSONBin 실제 데이터가 Current인 경우
-      : results.predictedFilingDate;  // Current가 아니면 머신러닝 예측 사용
-    
     steps.push({
       label: 'Filing Window',
-      date: formatDate(filingDate),
-      status: getStepStatus(visaType === 'employment' ? 2 : 1, filingDate),
+      date: formatDate(results.predictedFilingDate),
+      status: getStepStatus(visaType === 'employment' ? 2 : 1, results.predictedFilingDate),
       description: 'Can file I-485 or consular processing',
       icon: <Gavel />,
     });
 
     // Final Action
-    const finalActionDate = results.finalAction?.isCurrent 
-      ? 'Current'  // JSONBin 실제 데이터가 Current인 경우
-      : results.predictedFinalActionDate;  // Current가 아니면 머신러닝 예측 사용
-    
     steps.push({
       label: 'Final Action',
-      date: formatDate(finalActionDate),
-      status: getStepStatus(visaType === 'employment' ? 3 : 2, finalActionDate),
+      date: formatDate(results.predictedFinalActionDate),
+      status: getStepStatus(visaType === 'employment' ? 3 : 2, results.predictedFinalActionDate),
       description: 'Decision can be made on your case',
       icon: <CheckCircle />,
     });
@@ -381,22 +344,11 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
       <Box sx={{ mt: 3, p: 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
           <strong>Current Status:</strong>{' '}
-          {(() => {
-            const yearsFromPriorityDate = priorityDate ? (new Date().getTime() - priorityDate.getTime()) / (1000 * 60 * 60 * 24 * 365) : 0;
-            const isVeryOldPriorityDate = yearsFromPriorityDate > 4;
-
-            if (isVeryOldPriorityDate) {
-              return `Your Priority Date is from ${Math.floor(yearsFromPriorityDate)} years ago - you likely already received your Green Card or are very close to receiving it. Please verify your current immigration status.`;
-            }
-
-            if (results.finalAction?.isCurrent && results.filing?.isCurrent) {
-              return 'Both Filing and Final Action are current - you can proceed!';
-            } else if (results.filing?.isCurrent) {
-              return 'Filing is current - you can file your application';
-            } else {
-              return 'Waiting for priority date to become current';
-            }
-          })()}
+          {results.finalAction?.isCurrent && results.filing?.isCurrent
+            ? 'Both Filing and Final Action are current - you can proceed!'
+            : results.filing?.isCurrent
+            ? 'Filing is current - you can file your application'
+            : 'Waiting for priority date to become current'}
         </Typography>
       </Box>
     </Paper>
