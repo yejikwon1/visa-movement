@@ -27,17 +27,30 @@ export async function callOpenAI(messages: { role: "user" | "assistant" | "syste
   }
 }
 
-export async function classifyMessage(message: string): Promise<'yes' | 'no'> {
+export async function classifyMessage(message: string, recentHistory?: { role: "user" | "assistant"; content: string }[]): Promise<'yes' | 'no'> {
   try {
+    let contextString = "";
+    if (recentHistory && recentHistory.length > 0) {
+      // Get the last few messages for context
+      const lastFewMessages = recentHistory.slice(-4); // Last 4 messages for context
+      contextString = "\n\nRecent conversation context:\n" + 
+        lastFewMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+    }
+
     const messages = [
       {
         role: "system" as const,
         content: (
           "You are a classifier. Respond ONLY with 'Yes' or 'No'. " +
           "Does this message require visa bulletin data?\n\n" +
+          "Consider the conversation context - if this is a follow-up question " +
+          "to a previous visa-related query, it likely needs visa data.\n\n" +
           "Examples:\n" +
           "- 'Is my EB3 current?' → Yes\n" +
-          "- 'What does F2A mean?' → No"
+          "- 'What does F2A mean?' → No\n" +
+          "- 'for korean' (after visa question) → Yes\n" +
+          "- 'what about china?' (after visa question) → Yes" +
+          contextString
         )
       },
       {

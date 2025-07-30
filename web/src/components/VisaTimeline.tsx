@@ -28,6 +28,8 @@ interface AppResultsData {
   predictedFilingDate: string | null;
   predictedFinalActionDate: string | null;
   greenCardInHand: string | null;
+  currentFilingCutoff: string | null;
+  currentFinalActionCutoff: string | null;
 }
 
 interface ResultDetail {
@@ -135,10 +137,16 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
     // Final Action step
     if ((visaType === 'employment' && index === 3) || (visaType === 'family' && index === 2)) {
       if (results.finalAction?.isCurrent && results.filing?.isCurrent) return 'current';
+      if (results.predictedFinalActionDate?.includes('Current')) return 'current';
       return 'upcoming';
     }
     
     // Green Card step
+    if ((visaType === 'employment' && index === 4) || (visaType === 'family' && index === 3)) {
+      if (results.greenCardInHand?.includes('Already received') || results.greenCardInHand?.includes('imminent')) {
+        return 'current';
+      }
+    }
     return 'upcoming';
   };
 
@@ -233,6 +241,17 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
           alternativeLabel
           activeStep={activeStep}
           connector={<ColorlibConnector />}
+          sx={{
+            // Improve mobile layout
+            '& .MuiStep-root': {
+              px: { xs: 0.5, sm: 1 }, // Reduce padding on mobile
+            },
+            '& .MuiStepLabel-root': {
+              '& .MuiStepLabel-labelContainer': {
+                maxWidth: { xs: '80px', sm: 'none' }, // Limit width on mobile
+              },
+            },
+          }}
         >
           {timelineSteps.map((step, index) => (
             <Step key={step.label}>
@@ -342,14 +361,46 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
 
       {/* Additional Status Information */}
       <Box sx={{ mt: 3, p: 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 2 }}>
           <strong>Current Status:</strong>{' '}
-          {results.finalAction?.isCurrent && results.filing?.isCurrent
+          {results.greenCardInHand?.includes('Already received') || results.greenCardInHand?.includes('imminent')
+            ? '🎉 You likely already have your green card! (Historical priority date with current status)'
+            : results.finalAction?.isCurrent && results.filing?.isCurrent
             ? 'Both Filing and Final Action are current - you can proceed!'
             : results.filing?.isCurrent
             ? 'Filing is current - you can file your application'
             : 'Waiting for priority date to become current'}
         </Typography>
+        
+        {/* Current Visa Bulletin Cutoff Dates */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: { xs: 2, sm: 4 }, // Smaller gap on mobile
+          flexWrap: 'wrap',
+          mt: 1,
+          p: { xs: 1.5, sm: 2 }, // Less padding on mobile
+          bgcolor: alpha(theme.palette.primary.main, 0.03),
+          borderRadius: 2,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+        }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="caption" color="primary" fontWeight={600}>
+              Current Filing Cutoff
+            </Typography>
+            <Typography variant="body2" fontWeight={500} sx={{ color: theme.palette.text.primary }}>
+              {results.currentFilingCutoff || 'N/A'}
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="caption" color="primary" fontWeight={600}>
+              Current Final Action Cutoff
+            </Typography>
+            <Typography variant="body2" fontWeight={500} sx={{ color: theme.palette.text.primary }}>
+              {results.currentFinalActionCutoff || 'N/A'}
+            </Typography>
+          </Box>
+        </Box>
       </Box>
     </Paper>
   );

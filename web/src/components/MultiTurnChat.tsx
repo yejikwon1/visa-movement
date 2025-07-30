@@ -108,7 +108,7 @@ const MultiTurnChat = () => {
     setLoading(true);
 
     try {
-      const includeVisaData = await classifyMessage(input);
+      const includeVisaData = await classifyMessage(input, chatHistory);
       let systemPrompt = '';
       
       if (includeVisaData === 'yes') {

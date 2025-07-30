@@ -50,6 +50,8 @@ interface AppResultsData {
   predictedFilingDate: string | null;
   predictedFinalActionDate: string | null;
   greenCardInHand: string | null;
+  currentFilingCutoff: string | null;
+  currentFinalActionCutoff: string | null;
 }
 
 interface OptionType {
@@ -198,6 +200,15 @@ const PriorityDateChecker: React.FC = () => {
   const handleCheckStatus = () => {
     if (!vbData) { setError("Visa Bulletin data not loaded. Refresh."); return; }
     if (!priorityDate || !isValid(priorityDate)) { setError("Select valid Priority Date."); setResults(null); return; }
+    if (priorityDate > new Date()) { setError("Priority Date cannot be in the future. Please select a valid past date."); setResults(null); return; }
+    
+    // Handle extremely old priority dates
+    const priorityDateYear = priorityDate.getFullYear();
+    if (priorityDateYear < 2000) {
+      setError("Priority dates before 2000 are too old to process. You likely already have your green card or case was resolved long ago.");
+      setResults(null);
+      return;
+    }
 
     setLoadingAction(true); setError(null); setResults(null);
 
@@ -206,6 +217,7 @@ const PriorityDateChecker: React.FC = () => {
         const newResultsData: AppResultsData = {
           finalAction: null, filing: null, expectedPermDate: null,
           predictedFilingDate: null, predictedFinalActionDate: null, greenCardInHand: null,
+          currentFilingCutoff: null, currentFinalActionCutoff: null,
         };
         const currentVisaTypeKey = visaType;
         const vbDataCategoryKey = APP_CATEGORY_TO_VB_DATA_KEY_MAP[currentVisaTypeKey]?.[category];
@@ -215,6 +227,18 @@ const PriorityDateChecker: React.FC = () => {
 
         if (!vbDataCategoryKey) {
           throw new Error(`Config error: VB key map missing for category '${category}'.`);
+        }
+
+        // Validate that the country key exists in visa bulletin data
+        const filingCountryData = vbData.dates_for_filing[currentVisaTypeKey]?.[vbDataCategoryKey];
+        const finalActionCountryData = vbData.final_action_dates[currentVisaTypeKey]?.[vbDataCategoryKey];
+        
+        if (!filingCountryData || !finalActionCountryData) {
+          throw new Error(`Visa bulletin data not found for category '${category}' in ${visaType} visa type.`);
+        }
+        
+        if (!filingCountryData[countryKeyForVbData] && !finalActionCountryData[countryKeyForVbData]) {
+          throw new Error(`Country '${chargeabilityArea}' not found in visa bulletin data. Available countries: ${Object.keys(filingCountryData).join(', ')}`);
         }
 
         const pdString = format(priorityDate, 'yyyyMMdd');
@@ -233,16 +257,36 @@ const PriorityDateChecker: React.FC = () => {
         };
         newResultsData.finalAction = getCutoffResultDetail(vbData.final_action_dates[currentVisaTypeKey]?.[vbDataCategoryKey]?.[countryKeyForVbData], "Final Action");
         newResultsData.filing = getCutoffResultDetail(vbData.dates_for_filing[currentVisaTypeKey]?.[vbDataCategoryKey]?.[countryKeyForVbData], "Dates for Filing");
+        
+        // Store current cutoff dates from visa bulletin
+        newResultsData.currentFilingCutoff = newResultsData.filing?.cutoffText || null;
+        newResultsData.currentFinalActionCutoff = newResultsData.finalAction?.cutoffText || null;
 
         let permApprovalDateObj: Date | null = null;
-        if (visaType === 'employment' && permDays && priorityDate && isValid(priorityDate)) {
-          const expectedPermDt = new Date(priorityDate);
-          expectedPermDt.setDate(expectedPermDt.getDate() + permDays);
-          if (isValid(expectedPermDt)) {
-            newResultsData.expectedPermDate = format(expectedPermDt, 'MM/dd/yyyy');
-            permApprovalDateObj = startOfMonth(expectedPermDt);
-          } else { newResultsData.expectedPermDate = "Invalid PERM date calculation"; }
-        } else { newResultsData.expectedPermDate = null; }
+        if (visaType === 'employment') {
+          if (!permDays) {
+            console.warn("PERM processing time data not available - using estimates");
+            // Use a reasonable default if PERM data is not available (current average is ~600 days)
+            const estimatedPermDays = 600;
+            const expectedPermDt = new Date(priorityDate);
+            expectedPermDt.setDate(expectedPermDt.getDate() + estimatedPermDays);
+            if (isValid(expectedPermDt)) {
+              newResultsData.expectedPermDate = format(expectedPermDt, 'MM/dd/yyyy') + " (estimated)";
+              permApprovalDateObj = startOfMonth(expectedPermDt);
+            } else { 
+              newResultsData.expectedPermDate = "PERM date calculation error"; 
+            }
+          } else if (priorityDate && isValid(priorityDate)) {
+            const expectedPermDt = new Date(priorityDate);
+            expectedPermDt.setDate(expectedPermDt.getDate() + permDays);
+            if (isValid(expectedPermDt)) {
+              newResultsData.expectedPermDate = format(expectedPermDt, 'MM/dd/yyyy');
+              permApprovalDateObj = startOfMonth(expectedPermDt);
+            } else { newResultsData.expectedPermDate = "Invalid PERM date calculation"; }
+          }
+        } else { 
+          newResultsData.expectedPermDate = null; 
+        }
 
         const todayStartOfMonth = startOfMonth(new Date());
         let earliestActionStartDate = todayStartOfMonth;
@@ -252,8 +296,8 @@ const PriorityDateChecker: React.FC = () => {
             earliestActionStartDate = max([todayStartOfMonth, startOfMonth(priorityDate)]);
         }
         
-        const BUFFER_MONTHS_FILING_TO_FINAL_ACTION = 9;
-        const BUFFER_MONTHS_FINAL_ACTION_TO_GC = 4;
+        const BUFFER_MONTHS_FILING_TO_FINAL_ACTION = 3; // Realistic 2-3 month gap between Filing and Final Action
+        const BUFFER_MONTHS_FINAL_ACTION_TO_GC = 8; // Realistic 8 month gap between Final Action and Green Card in Hand
         const CONSERVATISM_BUFFER_MONTHS_FOR_PROPHET_FILING = 7;
 
         if (newResultsData.filing) {
@@ -264,10 +308,31 @@ const PriorityDateChecker: React.FC = () => {
           if (newResultsData.filing.isCurrent) {
             newResultsData.predictedFilingDate = `Dates for Filing: Current${visaType === 'employment' ? ' (actual filing subject to PERM approval)' : ''}.`;
             const actualFilingPossibleMonth = earliestActionStartDate;
-            const finalActionEstimate = addMonths(actualFilingPossibleMonth, BUFFER_MONTHS_FILING_TO_FINAL_ACTION);
-            newResultsData.predictedFinalActionDate = format(finalActionEstimate, 'dd/MM/yyyy');
-            const gcEstimate = addMonths(finalActionEstimate, BUFFER_MONTHS_FINAL_ACTION_TO_GC);
-            newResultsData.greenCardInHand = format(gcEstimate, 'dd/MM/yyyy');
+            
+            // Check if both Filing and Final Action are current
+            if (newResultsData.finalAction?.isCurrent) {
+              // Both are current - check if this is a historical priority date
+              const priorityDateYear = priorityDate.getFullYear();
+              const currentYear = new Date().getFullYear();
+              
+              if (priorityDateYear <= 2021) {
+                // Historical priority date - likely already completed
+                newResultsData.predictedFinalActionDate = 'Current (likely completed)';
+                newResultsData.greenCardInHand = 'Already received or imminent';
+              } else {
+                // Recent priority date - minimal processing time
+                const PROCESSING_BUFFER_MONTHS = 2;
+                newResultsData.predictedFinalActionDate = 'Current';
+                const gcEstimate = addMonths(actualFilingPossibleMonth, PROCESSING_BUFFER_MONTHS);
+                newResultsData.greenCardInHand = format(gcEstimate, 'MM/dd/yyyy');
+              }
+            } else {
+              // Only Filing is current, Final Action still needs time
+              const finalActionEstimate = addMonths(actualFilingPossibleMonth, BUFFER_MONTHS_FILING_TO_FINAL_ACTION);
+              newResultsData.predictedFinalActionDate = format(finalActionEstimate, 'MM/dd/yyyy');
+              const gcEstimate = addMonths(finalActionEstimate, BUFFER_MONTHS_FINAL_ACTION_TO_GC);
+              newResultsData.greenCardInHand = format(gcEstimate, 'MM/dd/yyyy');
+            }
           } else if (newResultsData.filing.cutoffText !== 'Unavailable' &&
                      !newResultsData.filing.cutoffText.startsWith('Invalid Date') &&
                      !newResultsData.filing.cutoffText.startsWith('N/A')) {
@@ -296,10 +361,17 @@ const PriorityDateChecker: React.FC = () => {
                 if (pdOrdinal > lastKnownForecastPoint.ordinal && averageMonthlyAdvanceInDays > 0) {
                   const remainingDaysToAdvance = pdOrdinal - lastKnownForecastPoint.ordinal;
                   const monthsToReachPdForFiling = Math.ceil(remainingDaysToAdvance / averageMonthlyAdvanceInDays);
-                  let baseProjectionDate = startOfMonth(addMonths(new Date(lastKnownForecastPoint.monthYearDate), 1));
-                  const prophetPredictedFilingMonth = addMonths(baseProjectionDate, monthsToReachPdForFiling);
-                  actualFilingPossibleMonth = max([prophetPredictedFilingMonth, earliestActionStartDate]);
-                                      newResultsData.predictedFilingDate = format(actualFilingPossibleMonth, 'dd/MM/yyyy') + filingWindowMessageSuffix;
+                  
+                  // Prevent unrealistic predictions (more than 30 years)
+                  if (monthsToReachPdForFiling > 360) {
+                    newResultsData.predictedFilingDate = "Prediction N/A (waiting time exceeds reasonable limits - likely 30+ years)";
+                    actualFilingPossibleMonth = earliestActionStartDate;
+                  } else {
+                    let baseProjectionDate = startOfMonth(addMonths(new Date(lastKnownForecastPoint.monthYearDate), 1));
+                    const prophetPredictedFilingMonth = addMonths(baseProjectionDate, monthsToReachPdForFiling);
+                    actualFilingPossibleMonth = max([prophetPredictedFilingMonth, earliestActionStartDate]);
+                    newResultsData.predictedFilingDate = format(actualFilingPossibleMonth, 'MM/dd/yyyy') + filingWindowMessageSuffix;
+                  }
                 } else if (pdOrdinal <= lastKnownForecastPoint.ordinal) {
                   let prophetForecastMonthForPD = lastKnownForecastPoint.monthYearDate;
                   for (const entry of knownForecastEntries) {
@@ -308,7 +380,7 @@ const PriorityDateChecker: React.FC = () => {
                   prophetForecastMonthForPD = startOfMonth(prophetForecastMonthForPD);
                   const adjustedProphetFilingMonth = addMonths(prophetForecastMonthForPD, CONSERVATISM_BUFFER_MONTHS_FOR_PROPHET_FILING);
                   actualFilingPossibleMonth = max([adjustedProphetFilingMonth, earliestActionStartDate]);
-                  newResultsData.predictedFilingDate = format(actualFilingPossibleMonth, 'dd/MM/yyyy');
+                  newResultsData.predictedFilingDate = format(actualFilingPossibleMonth, 'MM/dd/yyyy');
                 } else {
                   newResultsData.predictedFilingDate = "Prediction N/A (no positive trend/PD too far).";
                   actualFilingPossibleMonth = earliestActionStartDate;
@@ -316,15 +388,20 @@ const PriorityDateChecker: React.FC = () => {
                 
                 if (newResultsData.predictedFilingDate && !newResultsData.predictedFilingDate.toLowerCase().includes("n/a")) {
                   const finalActionDateReached = addMonths(actualFilingPossibleMonth, BUFFER_MONTHS_FILING_TO_FINAL_ACTION);
-                  newResultsData.predictedFinalActionDate = format(finalActionDateReached, 'dd/MM/yyyy');
+                  newResultsData.predictedFinalActionDate = format(finalActionDateReached, 'MM/dd/yyyy');
                   const greenCardDateReached = addMonths(finalActionDateReached, BUFFER_MONTHS_FINAL_ACTION_TO_GC);
-                  newResultsData.greenCardInHand = format(greenCardDateReached, 'dd/MM/yyyy');
+                  newResultsData.greenCardInHand = format(greenCardDateReached, 'MM/dd/yyyy');
                 } else {
                     newResultsData.predictedFinalActionDate = "N/A due to filing date prediction.";
                     newResultsData.greenCardInHand = "N/A due to filing date prediction.";
                 }
-              } else { newResultsData.predictedFilingDate = "Not enough valid forecast entries for trend calculation."; }
-            } else { newResultsData.predictedFilingDate = `No forecast data found for category: ${category} in ${visaType}_forecast.json.`; }
+              } else { 
+                newResultsData.predictedFilingDate = "Not enough historical data for accurate trend calculation. Consider checking manually with recent visa bulletin patterns."; 
+              }
+            } else { 
+              newResultsData.predictedFilingDate = `Forecast data unavailable for ${category} category. This might be a newer category or data collection is in progress.`; 
+              console.warn(`Missing forecast data for category: ${category} in ${visaType}_forecast.json`);
+            }
           } else {
             newResultsData.predictedFilingDate = `Forecasting N/A (Current Filing status: ${newResultsData.filing.cutoffText}).`;
             newResultsData.predictedFinalActionDate = "N/A";
@@ -511,12 +588,23 @@ const PriorityDateChecker: React.FC = () => {
                     <DatePicker
                         label="Your Priority Date"
                         value={priorityDate}
-                        onChange={nv=>{setPriorityDate(nv);setResults(null);setError(null);}}
+                        maxDate={new Date()} // Prevent future dates
+                        onChange={(nv) => {
+                          if (nv && isValid(nv) && nv > new Date()) {
+                            setError("Priority Date cannot be in the future. Please select a valid past date.");
+                            setPriorityDate(null);
+                            setResults(null);
+                          } else {
+                            setPriorityDate(nv);
+                            setResults(null);
+                            setError(null);
+                          }
+                        }}
                         slotProps={{
                           textField:{
                             fullWidth:true,
                             variant:'outlined', 
-                            helperText: visaType === 'employment' && permDays ? "Enter PERM filing date if applicable" : "Enter your I-130/I-140 Priority Date",
+                            helperText: visaType === 'employment' && permDays ? "Enter PERM filing date if applicable (past dates only)" : "Enter your I-130/I-140 Priority Date (past dates only)",
                             sx: {
                               '& .MuiOutlinedInput-root': {
                                 color: '#2E3B55',
@@ -568,7 +656,26 @@ const PriorityDateChecker: React.FC = () => {
                     </Button>
                   </Grid>
                   {error && !loadingAction && (
-                    <Grid item xs={12}><Alert severity="error" sx={{mt:2,whiteSpace:'pre-wrap'}}>{error}</Alert></Grid>
+                    <Grid item xs={12}>
+                      <Alert 
+                        severity="error" 
+                        sx={{mt:2,whiteSpace:'pre-wrap'}}
+                        action={
+                          error.includes('Failed to load critical data') ? (
+                            <Button 
+                              color="inherit" 
+                              size="small" 
+                              onClick={() => window.location.reload()}
+                              sx={{ ml: 1 }}
+                            >
+                              Retry
+                            </Button>
+                          ) : null
+                        }
+                      >
+                        {error}
+                      </Alert>
+                    </Grid>
                   )}
                   {results && !loadingAction && (
                     <Grid item xs={12} sx={{mt:2}}>
