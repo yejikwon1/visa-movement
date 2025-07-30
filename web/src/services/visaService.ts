@@ -11,15 +11,24 @@ export const fetchVisaBulletinData = async (): Promise<VisaBulletinData> => {
   const data = await response.json();
   const rawRecord = data.record;
   
+  // Normalize space characters in both final_action_dates and dates_for_filing
   ['employment', 'family'].forEach((type) => {
-    Object.keys(rawRecord.dates_for_filing[type]).forEach((catKey) => {
-      const categoryData = rawRecord.dates_for_filing[type][catKey];
-      Object.keys(categoryData).forEach((key) => {
-        const normalizedKey = key.replace(/\s/g, '');
-        if (normalizedKey !== key) {
-          categoryData[normalizedKey] = categoryData[key];
-        }
-      });
+    // Process both date sections
+    ['final_action_dates', 'dates_for_filing'].forEach((dateSection) => {
+      if (rawRecord[dateSection] && rawRecord[dateSection][type]) {
+        Object.keys(rawRecord[dateSection][type]).forEach((catKey) => {
+          const categoryData = rawRecord[dateSection][type][catKey];
+          Object.keys(categoryData).forEach((key) => {
+            // Handle both regular spaces and non-breaking spaces (\u00a0)
+            const normalizedKey = key.replace(/[\s\u00a0]+/g, '');
+            if (normalizedKey !== key) {
+              categoryData[normalizedKey] = categoryData[key];
+              // Also add a version without spaces but keeping the word separation
+              categoryData['AllChargeabilityAreasExceptThoseListed'] = categoryData[key];
+            }
+          });
+        });
+      }
     });
   });
   
