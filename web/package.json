@@ -38,5 +38,6 @@
   },
   "devDependencies": {
     "@types/react-dom": "^19.1.5"
-  }
+  },
+  "proxy": "https://api.jsonbin.io"
 }

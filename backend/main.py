@@ -14,7 +14,7 @@ app = FastAPI()
 # ✅ CORS 허용 도메인
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://visa-movement.onrender.com"],
+    allow_origins=["http://localhost:3000", "http://localhost:3006", "https://visa-movement.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,7 +45,7 @@ async def chat(request: Request):
     }
 
     payload = {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4o",
         "messages": messages,
         "temperature": 0.7,
         "max_tokens": 1000
@@ -143,7 +143,7 @@ async def should_include_data(payload: MessageInput):
     }
 
     payload_data = {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4o",
         "messages": messages,
         "temperature": 0,
         "max_tokens": 5
@@ -163,6 +163,76 @@ async def should_include_data(payload: MessageInput):
     except Exception as e:
         print(f"❌ Classification Error: {e}")
         return {"error": str(e), "includeVisaData": "no"}
+
+# ✅ /classifyDataNeed - Enhanced classifier for historical vs current data needs
+@app.post("/classifyDataNeed")
+@app.post("/classifyDataNeed/")
+async def classify_data_need(payload: MessageInput):
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are a classifier for visa-related queries. Respond with ONLY one of these options: "
+                "'none', 'current', 'historical', or 'both'.\n\n"
+                "Classification rules:\n"
+                "- 'none': General immigration questions not requiring visa bulletin data\n"
+                "- 'current': Questions about current visa availability, dates, or status\n"
+                "- 'historical': Questions about trends, movements, comparisons, or historical patterns\n"
+                "- 'both': Questions requiring both current status and historical context\n\n"
+                "Examples:\n"
+                "- 'Is my EB3 current?' → current\n"
+                "- 'What does F2A mean?' → none\n"
+                "- 'Is EB3 moving forward for India?' → historical\n"
+                "- 'How has EB3 India moved in the last year?' → historical\n"
+                "- 'What's the trend for Chinese EB2?' → historical\n"
+                "- 'Compare current EB3 with last year' → both\n"
+                "- 'When will my priority date be current based on trends?' → both\n"
+                "- 'eb3, pd april 1, 2024' → current"
+            )
+        },
+        {
+            "role": "user",
+            "content": payload.message
+        }
+    ]
+
+    if not OPENAI_API_KEY:
+        return {"error": "API key not configured", "dataType": "none"}
+
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload_data = {
+        "model": "gpt-4o",
+        "messages": messages,
+        "temperature": 0,
+        "max_tokens": 10
+    }
+
+    try:
+        response = requests.post(OPENAI_URL, headers=headers, json=payload_data, timeout=10)
+        
+        if response.status_code != 200:
+            print(f"❌ Data Need Classification Error: {response.status_code} - {response.text}")
+            return {"error": f"API error: {response.status_code}", "dataType": "none"}
+        
+        result = response.json()
+        reply = result.get("choices", [{}])[0].get("message", {}).get("content", "none").strip().lower()
+        
+        # Validate response
+        valid_types = ['none', 'current', 'historical', 'both']
+        if reply not in valid_types:
+            print(f"⚠️ Invalid classification result: {reply}, defaulting to 'none'")
+            reply = 'none'
+            
+        print(f"📊 Data need classification: '{payload.message}' → {reply}")
+        return {"dataType": reply}
+
+    except Exception as e:
+        print(f"❌ Data Need Classification Error: {e}")
+        return {"error": str(e), "dataType": "none"}
 
 # ✅ Health check endpoint
 @app.get("/health")

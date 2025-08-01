@@ -144,7 +144,7 @@ const ChatSidePanel: React.FC<ChatSidePanelProps> = ({ open, onClose }) => {
                   backgroundClip: 'text',
                 }}
               >
-                AI Assistant
+                Summer.AI
               </Typography>
               <Typography
                 variant="caption"

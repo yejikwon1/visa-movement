@@ -8,7 +8,7 @@ export async function callOpenAI(messages: { role: "user" | "assistant" | "syste
         'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o',
         messages: messages,
         temperature: 0.7,
         max_tokens: 1000,
@@ -28,6 +28,9 @@ export async function callOpenAI(messages: { role: "user" | "assistant" | "syste
 }
 
 export async function classifyMessage(message: string, recentHistory?: { role: "user" | "assistant"; content: string }[]): Promise<'yes' | 'no'> {
+  console.log('🔍 Visa Data Classification Request (OpenAI):');
+  console.log('📝 Question:', message);
+  
   try {
     let contextString = "";
     if (recentHistory && recentHistory.length > 0) {
@@ -35,6 +38,7 @@ export async function classifyMessage(message: string, recentHistory?: { role: "
       const lastFewMessages = recentHistory.slice(-4); // Last 4 messages for context
       contextString = "\n\nRecent conversation context:\n" + 
         lastFewMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+      console.log('🔄 Using conversation context for classification');
     }
 
     const messages = [
@@ -66,7 +70,7 @@ export async function classifyMessage(message: string, recentHistory?: { role: "
         'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o',
         messages: messages,
         temperature: 0,
         max_tokens: 5,
@@ -79,9 +83,25 @@ export async function classifyMessage(message: string, recentHistory?: { role: "
 
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content?.toLowerCase().trim();
-    return reply === 'yes' ? 'yes' : 'no';
+    const finalResult = reply === 'yes' ? 'yes' : 'no';
+    
+    console.log('🤖 OpenAI Classification Response:', reply);
+    
+    // Log the final decision with clear formatting
+    if (finalResult === 'yes') {
+      console.log('✅ VISA BULLETIN REQUIRED: YES');
+      console.log('📅 OpenAI determined visa bulletin data is needed');
+    } else {
+      console.log('❌ VISA BULLETIN REQUIRED: NO');
+      console.log('💬 OpenAI determined this is a general immigration question');
+    }
+    
+    console.log('==========================================');
+    return finalResult;
   } catch (error) {
     console.error('❌ Classification Error:', error);
+    console.log('❌ VISA BULLETIN REQUIRED: NO (due to OpenAI classification error)');
+    console.log('==========================================');
     return 'no'; // Default to no visa data needed if classification fails
   }
 } 

@@ -64,7 +64,7 @@ const WelcomeMessage = () => (
         <SupportAgentIcon sx={{ fontSize: 45, color: 'white' }} />
       </Avatar>
       <Typography variant="h5" fontWeight="bold" sx={{ color: themeColors.primary }}>
-        Hello! I'm your Immigration Assistant
+        Hello! I'm Summer.AI
       </Typography>
       <Typography variant="body1" sx={{ color: themeColors.userMessage, maxWidth: '80%' }}>
         I can help you with visa-related questions and provide information about the immigration process.
@@ -115,7 +115,7 @@ const MultiTurnChat = () => {
         const visaData = await fetchVisaJson();
         systemPrompt = generateSystemPrompt(visaData);
       } else {
-        systemPrompt = `You are a helpful immigration assistant. Answer concisely without referring to visa bulletin cutoff dates.`;
+        systemPrompt = `You are Summer.AI, a helpful immigration assistant. Answer concisely without referring to visa bulletin cutoff dates.`;
       }
 
       const messagesToSend: ApiMessage[] = [
@@ -180,7 +180,7 @@ const MultiTurnChat = () => {
           <SupportAgentIcon sx={{ fontSize: 20 }} />
         </Avatar>
         <Typography variant="h6" fontWeight="bold" sx={{ color: themeColors.primary }}>
-          Immigration Assistant
+          Summer.AI
         </Typography>
       </Box>
 

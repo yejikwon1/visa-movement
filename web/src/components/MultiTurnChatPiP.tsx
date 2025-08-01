@@ -12,10 +12,7 @@ import {
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import PersonIcon from '@mui/icons-material/Person';
 import SendIcon from '@mui/icons-material/Send';
-import { fetchVisaJson } from '../services/fetchVisaJson';
-import { generateSystemPrompt } from '../services/generateSystemPrompt';
-import { fetchChatViaBackend } from '../services/fetchChatViaBackend';
-import { checkIfVisaDataNeeded } from '../services/checkIfVisaDataNeeded';
+import { optimizedChatCall } from '../services/optimizedChatService';
 
 // Custom theme colors
 const themeColors = {
@@ -33,11 +30,6 @@ const themeColors = {
 
 type ChatMessage = {
   role: 'user' | 'assistant';
-  content: string;
-};
-
-type ApiMessage = {
-  role: 'user' | 'assistant' | 'system';
   content: string;
 };
 
@@ -65,7 +57,7 @@ const WelcomeMessage = () => (
         <SupportAgentIcon sx={{ fontSize: 30, color: 'white' }} />
       </Avatar>
       <Typography variant="h6" fontWeight="bold" sx={{ color: themeColors.primary }}>
-        Immigration Assistant
+        Summer.AI
       </Typography>
       <Typography variant="body2" sx={{ color: themeColors.userMessage, fontSize: '0.85rem' }}>
         Ask me anything about visa and immigration processes.
@@ -97,29 +89,19 @@ const MultiTurnChatPiP = () => {
     setLoading(true);
 
     try {
-      const includeVisaData = await checkIfVisaDataNeeded(input);
-      let systemPrompt = '';
+      console.log('💬 사용자 입력:', input);
       
-      if (includeVisaData === 'yes') {
-        const visaData = await fetchVisaJson();
-        systemPrompt = generateSystemPrompt(visaData);
-      } else {
-        systemPrompt = `You are a helpful immigration assistant. Answer concisely without referring to visa bulletin cutoff dates.`;
-      }
-
-      const messagesToSend: ApiMessage[] = [
-        { role: 'system', content: systemPrompt },
-        ...updatedHistory,
-      ];
-
-      const responseText = await fetchChatViaBackend(messagesToSend);
+      // Single optimized API call
+      const result = await optimizedChatCall(updatedHistory);
+      
+      console.log(`⚡ 처리 완료: ${result.metadata.processingTime}ms, Visa데이터 사용: ${result.metadata.usedVisaData}`);
 
       setChatHistory([
         ...updatedHistory,
-        { role: 'assistant', content: responseText },
+        { role: 'assistant', content: result.response },
       ]);
     } catch (err) {
-      console.error('❌ GPT error:', err);
+      console.error('❌ Chat error:', err);
       setChatHistory([
         ...updatedHistory,
         { role: 'assistant', content: '❌ Failed to get a response.' },

@@ -204,7 +204,6 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
   };
 
   const timelineSteps = buildTimelineSteps();
-  const activeStep = timelineSteps.findIndex(step => step.status === 'current');
 
   return (
     <Paper
@@ -239,7 +238,7 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
       <Box sx={{ width: '100%', mb: 4 }}>
         <Stepper
           alternativeLabel
-          activeStep={activeStep}
+          activeStep={-1}
           connector={<ColorlibConnector />}
           sx={{
             // Improve mobile layout
@@ -254,12 +253,18 @@ const VisaTimeline: React.FC<VisaTimelineProps> = ({ results, visaType, priority
           }}
         >
           {timelineSteps.map((step, index) => (
-            <Step key={step.label}>
+            <Step 
+              key={step.label}
+              completed={step.status === 'completed'}
+              active={step.status === 'current'}
+            >
               <StepLabel
                 StepIconComponent={(props) => (
                   <ColorlibStepIcon
                     {...props}
                     icon={step.icon}
+                    completed={step.status === 'completed'}
+                    active={step.status === 'current'}
                     error={step.status === 'unavailable'}
                   />
                 )}

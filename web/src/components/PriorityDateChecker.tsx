@@ -143,16 +143,38 @@ const PriorityDateChecker: React.FC = () => {
 
   useEffect(() => {
     setLoading(true); setError(null);
+    
+    const fetchOptions = {
+      method: 'GET',
+      headers: { 
+        'X-Master-Key': JSONBIN_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors' as RequestMode
+    };
+
     Promise.all([
-      fetch(JSONBIN_URL, { headers: { 'X-Master-Key': JSONBIN_API_KEY } })
+      fetch(JSONBIN_URL, fetchOptions)
         .then(res => {
           if (!res.ok) return res.text().then(text => { throw new Error(`Visa Bulletin Data: HTTP error ${res.status} - ${text || res.statusText}. Check JSONBin URL/Key.`) });
           return res.json();
+        })
+        .catch(err => {
+          if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+            throw new Error('Network error: Unable to connect to JSONBin API. This might be due to CORS policy or network connectivity issues.');
+          }
+          throw err;
         }),
-      fetch(PERM_JSONBIN_URL, { headers: { 'X-Master-Key': JSONBIN_API_KEY } })
+      fetch(PERM_JSONBIN_URL, fetchOptions)
         .then(res => {
           if (!res.ok) return res.text().then(text => { throw new Error(`PERM Data: HTTP error ${res.status} - ${text || res.statusText}. Check JSONBin URL/Key.`) });
           return res.json();
+        })
+        .catch(err => {
+          if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+            throw new Error('Network error: Unable to connect to JSONBin API for PERM data. This might be due to CORS policy or network connectivity issues.');
+          }
+          throw err;
         })
     ]).then(([vbJsonData, permJsonData]) => {
       const rawVbRecord = vbJsonData.record;
