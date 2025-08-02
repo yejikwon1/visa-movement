@@ -41,11 +41,7 @@ const About: React.FC = () => {
       title: 'Real-time Updates',
       description: 'Live data integration ensures you always have the most current visa bulletin information.',
     },
-    {
-      icon: <Security />,
-      title: 'Data Privacy',
-      description: 'Your personal information is processed securely and never stored on our servers.',
-    },
+
     {
       icon: <Speed />,
       title: 'Fast & Accurate',
@@ -169,7 +165,7 @@ const About: React.FC = () => {
             <Slide direction="up" in mountOnEnter timeout={800}>
               <Grid container spacing={4} sx={{ mb: 6 }}>
                 {features.map((feature, index) => (
-                  <Grid item xs={12} sm={6} md={3} key={index}>
+                  <Grid item xs={12} sm={6} md={4} key={index}>
                     <Card
                       elevation={0}
                       sx={{
