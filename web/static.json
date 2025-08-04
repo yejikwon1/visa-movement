@@ -1,0 +1,18 @@
+{
+    "routes": [
+      {
+        "path": "/sitemap.xml",
+        "type": "file"
+      },
+      {
+        "path": "/robots.txt",
+        "type": "file"
+      },
+      {
+        "path": "/*",
+        "type": "rewrite",
+        "destination": "/index.html"
+      }
+    ]
+  }
+  
