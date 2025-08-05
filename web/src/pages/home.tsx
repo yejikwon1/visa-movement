@@ -9,11 +9,29 @@ import {
   Paper,
   CircularProgress,
   Alert,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  Chip,
+  Fade,
+  Slide,
+  alpha,
 } from '@mui/material';
+import { 
+  SupportAgent, 
+  AutoAwesome, 
+  QuestionAnswer, 
+  TrendingUp,
+  Lightbulb,
+  Schedule,
+  CheckCircle
+} from '@mui/icons-material';
 import { fetchVisaBulletinData, fetchPermDays } from '../services/visaService';
 import { VisaBulletinData } from '../types/visa';
 import PriorityDateChecker from '../components/PriorityDateChecker';
 import VisaTable from '../components/VisaTable';
+import ChatbotPreview from '../components/ChatbotPreview';
 import SEO from '../components/SEO';
 
 const Home = () => {
@@ -22,6 +40,7 @@ const Home = () => {
   const [permDays, setPermDays] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showChatPreview, setShowChatPreview] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -115,15 +134,266 @@ const Home = () => {
     );
   }
 
+  const chatbotFeatures = [
+    {
+      icon: <QuestionAnswer sx={{ fontSize: 40, color: '#3B82F6' }} />,
+      title: "Interactive Q&A",
+      description: "Ask any immigration question and get instant, accurate answers"
+    },
+    {
+      icon: <TrendingUp sx={{ fontSize: 40, color: '#10B981' }} />,
+      title: "Real-time Updates",
+      description: "Get the latest visa bulletin data and processing times"
+    },
+    {
+      icon: <Lightbulb sx={{ fontSize: 40, color: '#F59E0B' }} />,
+      title: "Smart Guidance",
+      description: "Personalized advice based on your specific situation"
+    },
+    {
+      icon: <Schedule sx={{ fontSize: 40, color: '#7C3AED' }} />,
+      title: "Timeline Estimates",
+      description: "Calculate processing times and priority date predictions"
+    }
+  ];
+
+  const exampleQuestions = [
+    "How long does EB-2 processing take for Indian applicants?",
+    "What documents do I need for I-485 filing?",
+    "When will my priority date become current?",
+    "Can I change jobs while my I-485 is pending?"
+  ];
+
   return (
     <>
       <SEO 
-        title="Visa Bulletin Priority Date Checker | Track Your Immigration Status"
-        description="Check your visa bulletin priority date and track immigration status. Real-time updates for family and employment-based visas. Free priority date calculator and visa bulletin tracker."
-        keywords="visa bulletin, priority date, immigration status, green card, family visa, employment visa, visa tracker, priority date checker, immigration calculator, visa bulletin dates, priority date calculator"
+        title="AI Immigration Assistant | Visa Bulletin Tracker & Priority Date Checker"
+        description="Get instant answers to immigration questions with our AI assistant. Track priority dates, understand processes, and get personalized guidance. Free visa bulletin tracker and priority date calculator."
+        keywords="AI immigration assistant, visa bulletin, priority date, immigration help, green card, family visa, employment visa, visa tracker, priority date checker, immigration calculator, visa bulletin dates, immigration chatbot"
         structuredData={structuredData}
       />
-      <Container maxWidth="lg">
+      
+      {/* Hero Section with Chatbot Promotion */}
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #7C3AED 100%)',
+          color: 'white',
+          py: { xs: 6, md: 8 },
+          mb: 6,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+          }
+        }}
+      >
+        <Container maxWidth="lg">
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={7}>
+              <Fade in timeout={800}>
+                <Box>
+                  <Typography 
+                    variant="h2" 
+                    component="h1" 
+                    gutterBottom 
+                    sx={{ 
+                      fontWeight: 700,
+                      fontSize: { xs: '2rem', md: '3rem' },
+                      lineHeight: 1.2,
+                      mb: 2
+                    }}
+                  >
+                    Your AI Immigration Assistant
+                  </Typography>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      mb: 3,
+                      opacity: 0.9,
+                      fontWeight: 400,
+                      lineHeight: 1.4
+                    }}
+                  >
+                    Get instant answers to all your immigration questions with our advanced AI chatbot. 
+                    Track priority dates, understand processes, and get personalized guidance.
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      startIcon={<SupportAgent />}
+                      sx={{
+                        backgroundColor: 'white',
+                        color: '#1E3A8A',
+                        px: 4,
+                        py: 1.5,
+                        borderRadius: 3,
+                        fontWeight: 600,
+                        fontSize: '1.1rem',
+                        '&:hover': {
+                          backgroundColor: alpha('#ffffff', 0.9),
+                          transform: 'translateY(-2px)',
+                        },
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      }}
+                    >
+                      Start Chatting Now
+                    </Button>
+                                         <Button
+                       variant="outlined"
+                       size="large"
+                       startIcon={<AutoAwesome />}
+                       onClick={() => setShowChatPreview(!showChatPreview)}
+                       sx={{
+                         borderColor: 'white',
+                         color: 'white',
+                         px: 4,
+                         py: 1.5,
+                         borderRadius: 3,
+                         fontWeight: 600,
+                         fontSize: '1.1rem',
+                         '&:hover': {
+                           backgroundColor: alpha('#ffffff', 0.1),
+                           borderColor: 'white',
+                         },
+                       }}
+                     >
+                       See Examples
+                     </Button>
+                  </Box>
+                </Box>
+              </Fade>
+            </Grid>
+            
+            <Grid item xs={12} md={5}>
+              <Slide direction="left" in timeout={1000}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: 4,
+                    p: 3,
+                    color: '#1E293B',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <SupportAgent sx={{ fontSize: 40, color: '#3B82F6', mr: 2 }} />
+                    <Box>
+                      <Typography variant="h6" fontWeight={600}>
+                        AI Assistant Ready
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Ask me anything about immigration
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Try asking:
+                    </Typography>
+                    {exampleQuestions.map((question, index) => (
+                      <Chip
+                        key={index}
+                        label={question}
+                        size="small"
+                        sx={{
+                          m: 0.5,
+                          backgroundColor: alpha('#3B82F6', 0.1),
+                          color: '#1E3A8A',
+                          '&:hover': {
+                            backgroundColor: alpha('#3B82F6', 0.2),
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircle sx={{ fontSize: 20, color: '#10B981' }} />
+                    <Typography variant="body2" color="text.secondary">
+                      Powered by GPT-4 with real-time visa data
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Slide>
+            </Grid>
+          </Grid>
+        </Container>
+              </Box>
+
+        {/* Chatbot Preview Section */}
+        {showChatPreview && (
+          <Container maxWidth="lg">
+            <ChatbotPreview onStartChat={() => {
+              // This will be handled by the parent component
+              console.log('Start chat clicked');
+            }} />
+          </Container>
+        )}
+
+        <Container maxWidth="lg">
+          {/* Chatbot Features Section */}
+        <Box sx={{ mb: 6 }}>
+          <Typography 
+            variant="h3" 
+            component="h2" 
+            gutterBottom 
+            sx={{ 
+              textAlign: 'center',
+              fontWeight: 600,
+              mb: 4
+            }}
+          >
+            Why Choose Our AI Assistant?
+          </Typography>
+          
+          <Grid container spacing={3}>
+            {chatbotFeatures.map((feature, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Fade in timeout={600 + index * 200}>
+                  <Card
+                    elevation={0}
+                    sx={{
+                      height: '100%',
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(148, 163, 184, 0.1)',
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.1)',
+                      },
+                    }}
+                  >
+                    <CardContent sx={{ textAlign: 'center', p: 3 }}>
+                      <Box sx={{ mb: 2 }}>
+                        {feature.icon}
+                      </Box>
+                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                        {feature.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {feature.description}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Fade>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+
         <Box sx={{ mb: 6, textAlign: 'center' }}>
           <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
             Visa Bulletin Tracker
