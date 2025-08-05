@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://trackusvisa.com/sitemap.xml
+
+# Disallow admin or private areas (if any)
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+
+# Allow important directories
+Allow: /public/
+Allow: /static/
+
+# Crawl delay (optional - be respectful to server)
+Crawl-delay: 1 

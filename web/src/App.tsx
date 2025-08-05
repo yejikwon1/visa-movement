@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import {
   Container,
   AppBar,
@@ -21,6 +22,7 @@ import MainLayout from './components/MainLayout';
 import VisaTablePage from './pages/VisaTablePage';
 import About from './pages/About';
 import ChatSidePanel from './components/ChatSidePanel';
+import PerformanceOptimizer from './components/PerformanceOptimizer';
 
 import { fetchVisaBulletinData, fetchPermDays } from './services/visaService';
 import { VisaBulletinData } from './types/visa';
@@ -290,12 +292,16 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <AppContent />
-      </Router>
-    </ThemeProvider>
+    <HelmetProvider>
+      <PerformanceOptimizer>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Router>
+            <AppContent />
+          </Router>
+        </ThemeProvider>
+      </PerformanceOptimizer>
+    </HelmetProvider>
   );
 };
 
