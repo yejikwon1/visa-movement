@@ -120,19 +120,6 @@ app.add_middleware(
 open https://<your-frontend>.vercel.app
 ```
 
-#### Frontend (React) — Netlify (alternative)
-1) New site from Git → Repo → Settings:
-- **Base directory**: `web`
-- **Build command**: `npm run build`
-- **Publish directory**: `web/build` (or `build` if base set to `web`)
-- Add env var: `REACT_APP_OPENAI_API_KEY` if using direct OpenAI from the browser.
-
-2) SPA routing (optional if 404 on refresh):
-- Add a `_redirects` file in `web/public` with:
-```txt
-/* /index.html 200
-```
-
 #### Frontend (React) — Render Static Site (alternative)
 1) Create Static Site:
 - **Root directory**: `web`
@@ -148,25 +135,6 @@ open https://<your-frontend>.vercel.app
 - In production, ensure:
   - Frontend domain is added to FastAPI `allow_origins`.
   - If you prefer not to expose a browser API key, move chat calls behind the backend and remove `REACT_APP_OPENAI_API_KEY`.
-
-#### Post-Deploy Verification
-```bash
-# Backend
-curl https://<your-backend>/health
-
-# Frontend (open in the browser)
-open https://<your-frontend>/
-
-# Browser console checks:
-# - Classifier calls to https://<your-backend>/shouldIncludeVisaData succeed (200)
-# - Chat requests succeed (either via OpenAI API if REACT_APP_OPENAI_API_KEY set, or via your backend if implemented)
-```
-
-
-
-
-
-
 
 
 
