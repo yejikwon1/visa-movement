@@ -8,7 +8,6 @@ import {
   CircularProgress,
   Fade,
   Avatar,
-  alpha,
 } from '@mui/material';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import PersonIcon from '@mui/icons-material/Person';
@@ -65,41 +64,11 @@ const WelcomeMessage = () => (
         <SupportAgentIcon sx={{ fontSize: 45, color: 'white' }} />
       </Avatar>
       <Typography variant="h5" fontWeight="bold" sx={{ color: themeColors.primary }}>
-        Hello! I'm Summer.AI 👋
+        Hello! I'm Summer.AI
       </Typography>
-      <Typography variant="body1" sx={{ color: themeColors.userMessage, maxWidth: '80%', mb: 2 }}>
-        Your AI immigration assistant powered by GPT-4. I can help you with:
-      </Typography>
-      
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%', maxWidth: '300px' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, backgroundColor: alpha('#3B82F6', 0.1), borderRadius: 1 }}>
-          <Box sx={{ width: 8, height: 8, backgroundColor: '#3B82F6', borderRadius: '50%' }} />
-          <Typography variant="body2" sx={{ color: themeColors.userMessage }}>
-            Priority date tracking & predictions
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, backgroundColor: alpha('#10B981', 0.1), borderRadius: 1 }}>
-          <Box sx={{ width: 8, height: 8, backgroundColor: '#10B981', borderRadius: '50%' }} />
-          <Typography variant="body2" sx={{ color: themeColors.userMessage }}>
-            Process guidance & timelines
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, backgroundColor: alpha('#F59E0B', 0.1), borderRadius: 1 }}>
-          <Box sx={{ width: 8, height: 8, backgroundColor: '#F59E0B', borderRadius: '50%' }} />
-          <Typography variant="body2" sx={{ color: themeColors.userMessage }}>
-            Form requirements & documentation
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, backgroundColor: alpha('#7C3AED', 0.1), borderRadius: 1 }}>
-          <Box sx={{ width: 8, height: 8, backgroundColor: '#7C3AED', borderRadius: '50%' }} />
-          <Typography variant="body2" sx={{ color: themeColors.userMessage }}>
-            Real-time visa bulletin data
-          </Typography>
-        </Box>
-      </Box>
-      
-      <Typography variant="body2" sx={{ color: themeColors.userMessage, mt: 2, fontStyle: 'italic' }}>
-        Try asking: "How long does EB-2 processing take?" or "What documents do I need for I-485?"
+      <Typography variant="body1" sx={{ color: themeColors.userMessage, maxWidth: '80%' }}>
+        I can help you with visa-related questions and provide information about the immigration process.
+        Feel free to ask me anything!
       </Typography>
     </Box>
   </Fade>

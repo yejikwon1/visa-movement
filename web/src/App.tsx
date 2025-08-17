@@ -22,8 +22,6 @@ import MainLayout from './components/MainLayout';
 import VisaTablePage from './pages/VisaTablePage';
 import About from './pages/About';
 import ChatSidePanel from './components/ChatSidePanel';
-import FloatingChatButton from './components/FloatingChatButton';
-import WelcomeNotification from './components/WelcomeNotification';
 import PerformanceOptimizer from './components/PerformanceOptimizer';
 
 import { fetchVisaBulletinData, fetchPermDays } from './services/visaService';
@@ -286,17 +284,6 @@ const AppContent = () => {
         <ChatSidePanel 
           open={chatOpen} 
           onClose={() => setChatOpen(false)} 
-        />
-        
-        {/* Floating Chat Button */}
-        <FloatingChatButton 
-          onChatClick={() => setChatOpen(!chatOpen)}
-          isChatOpen={chatOpen}
-        />
-        
-        {/* Welcome Notification */}
-        <WelcomeNotification 
-          onStartChat={() => setChatOpen(true)}
         />
       </Box>
     </Fade>
