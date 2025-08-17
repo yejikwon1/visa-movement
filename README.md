@@ -10,15 +10,20 @@
  **Project Summary**
  
  Please provide a short (one paragraph) summary of your project. Consider this your elevator pitch.
- Include the link to your Devpost project page here: (Paste finalized Devpost site)
- Include the link to your Devpost project page here: (To be added: finalized Devpost site)
+ Visa Movement is a web-based platform that makes the U.S. green card process more transparent and predictable. 
+ By combining historical Visa Bulletin data with machine learning models (Prophet + ARIMA), it forecasts future cutoff dates and provides applicants with actionable insights. 
+ An interactive visa table updates automatically each month, while an AI-powered chatbot answers immigration questions in simple language, offering both guidance and context. 
+ With automated data pipelines, secure API integration, and a clean user interface, Visa Movement empowers applicants to navigate the immigration process with greater clarity and 
+ confidence.
  
+ Include the link to your Devpost project page here: (Paste finalized Devpost site)
+https://devpost.com/software/visa-movement?ref_content=my-projects-tab&ref_feature=my_projects
+  
  **Authors**
  
- - Name - Devpost ID – Penn email - [GitHub](https://github.com/username)
- - Name - Devpost ID – Penn email - [GitHub](https://github.com/username)
- - Name - Devpost ID – Penn email - [GitHub](https://github.com/username)
- - Name - Devpost ID – Penn email - [GitHub](https://github.com/username)
+ - Name - yejikwon1 – yejikwon@seas.upenn.edu - [GitHub](https://github.com/yejikwon1/visa-movement.git)
+ - Name - Jaemin-L – jaemin95@seas.upenn.edu - [GitHub](https://github.com/yejikwon1/visa-movement.git)
+
  
  ## **Usage**
  This section walks a prospective user through the process of installing and running the project on their local machine. 
@@ -30,16 +35,10 @@
  
  ### **Installation**
  Give a step-by-step rundown of how to install your project.
+
  
- State step 1.
- 
- Provide code samples in this fenced code block.
- 
- State step 2.
- 
- Provide code samples in this fenced code block.
- 
- Etc.
+
+
  
  ### **Deployment**
  Give a step-by-step rundown of how to use your project. Including screenshots in this section can be highly effective for highlighting specific features of your project.
