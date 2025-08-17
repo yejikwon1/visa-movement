@@ -77,16 +77,99 @@ Before starting, make sure you have:
  
  ### **Deployment**
  Give a step-by-step rundown of how to use your project. Including screenshots in this section can be highly effective for highlighting specific features of your project.
- 
- State step 1. 
- 
- Provide code samples in this fenced code block.
- 
- State step 2.
- 
- Provide code samples in this fenced code block.
- 
- Etc.
+
+#### Backend (FastAPI) — Render
+1) Create a new Web Service:
+- **Root directory**: `backend`
+- **Runtime**: Python 3.9+
+- **Build command**: `pip install -r requirements.txt`
+- **Start command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- **Environment variables**: `OPENAI_API_KEY=sk-REPLACE_ME`
+
+2) Verify health:
+```bash
+curl https://<your-backend>.onrender.com/health
+```
+
+3) Update CORS allowlist if needed:
+- Add your production frontend URL to `allow_origins` in `backend/main.py` or generalize origins safely.
+
+```python
+# backend/main.py (snippet)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "https://<your-frontend-domain>"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+#### Frontend (React) — Vercel
+1) New Project → Import GitHub repo → Set:
+- **Framework**: Create React App
+- **Root directory**: `web`
+- **Build command**: `npm run build`
+- **Output directory**: `build`
+
+2) Environment variables (if browser calls OpenAI directly):
+- `REACT_APP_OPENAI_API_KEY=sk-REPLACE_ME`
+
+3) Deploy, then open your URL:
+```bash
+open https://<your-frontend>.vercel.app
+```
+
+#### Frontend (React) — Netlify (alternative)
+1) New site from Git → Repo → Settings:
+- **Base directory**: `web`
+- **Build command**: `npm run build`
+- **Publish directory**: `web/build` (or `build` if base set to `web`)
+- Add env var: `REACT_APP_OPENAI_API_KEY` if using direct OpenAI from the browser.
+
+2) SPA routing (optional if 404 on refresh):
+- Add a `_redirects` file in `web/public` with:
+```txt
+/* /index.html 200
+```
+
+#### Frontend (React) — Render Static Site (alternative)
+1) Create Static Site:
+- **Root directory**: `web`
+- **Build command**: `npm install && npm run build`
+- **Publish directory**: `build`
+- Add env var `REACT_APP_OPENAI_API_KEY` if applicable.
+- For SPA rewrites, include a `static.json` in the deployed root or use `_redirects` as above.
+
+#### Wiring the Frontend and Backend
+- The app uses two patterns:
+  - Direct OpenAI calls in the browser via `REACT_APP_OPENAI_API_KEY` (`web/src/services/directOpenAI.ts`).
+  - Backend classification via `POST /shouldIncludeVisaData` (`web/src/services/checkIfVisaDataNeeded.ts` → FastAPI).
+- In production, ensure:
+  - Frontend domain is added to FastAPI `allow_origins`.
+  - If you prefer not to expose a browser API key, move chat calls behind the backend and remove `REACT_APP_OPENAI_API_KEY`.
+
+#### Post-Deploy Verification
+```bash
+# Backend
+curl https://<your-backend>/health
+
+# Frontend (open in the browser)
+open https://<your-frontend>/
+
+# Browser console checks:
+# - Classifier calls to https://<your-backend>/shouldIncludeVisaData succeed (200)
+# - Chat requests succeed (either via OpenAI API if REACT_APP_OPENAI_API_KEY set, or via your backend if implemented)
+```
+
+
+
+
+
+
+
+
+
  ## **Additional information**
  
  ### **Tools used**
