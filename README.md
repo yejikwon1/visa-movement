@@ -126,14 +126,30 @@ app.add_middleware(
 
  ## **Additional information**
  
- ### **Tools used**
- Which frameworks, libraries, or other tools did you use to create your project?
+ ### **Tools Used**
+  Which frameworks, libraries, or other tools did you use to create your project?
 
-[Tool 1](https://maven.apache.org/) - Description (e.g. "Web framework used")  
-
-[Tool 2](https://maven.apache.org/)  - Description   
-
-[Tool 3](https://maven.apache.org/) - Description   
+- [React](https://reactjs.org/) - JavaScript library used to build the frontend interface with a component-based architecture.
+- [TypeScript](https://www.typescriptlang.org/) - Adds static type checking to JavaScript, improving code safety and developer productivity.
+- [Material-UI (MUI)](https://mui.com/) - React UI framework implementing Google’s Material Design system.
+- [React Router DOM](https://reactrouter.com/) - Enables client-side routing between pages in the React app.
+- [Axios](https://axios-http.com/) - HTTP client library used to make API calls from the frontend.
+- [Date-fns](https://date-fns.org/) - Lightweight JavaScript utility library for date manipulation and formatting.
+- [FastAPI](https://fastapi.tiangolo.com/) - High-performance Python web framework used for building REST APIs.
+- [Uvicorn](https://www.uvicorn.org/) - ASGI server used to run FastAPI applications efficiently.
+- [python-dotenv](https://github.com/theskumar/python-dotenv) - Loads environment variables from a `.env` file into the backend application.
+- [Requests](https://docs.python-requests.org/) - HTTP client library for Python used to interact with external APIs like OpenAI.
+- [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/) - Python library for scraping and parsing HTML content from the Visa Bulletin site.
+- [Pandas](https://pandas.pydata.org/) - Python library used for data manipulation and time series forecasting preparation.
+- [Flask](https://flask.palletsprojects.com/) - Lightweight Python web framework used in some auxiliary data processing scripts.
+- [Schedule](https://schedule.readthedocs.io/) - Python job scheduler used to automate Visa Bulletin scraping.
+- [React Scripts](https://www.npmjs.com/package/react-scripts) - Provides configuration for Create React App projects.
+- [Node.js](https://nodejs.org/) - JavaScript runtime used for running frontend scripts and development tools.
+- [npm](https://www.npmjs.com/) - Node package manager used to install JavaScript dependencies.
+- [pip](https://pip.pypa.io/) - Python package installer used to install backend and script dependencies.
+- [OpenAI GPT-3.5 Turbo](https://platform.openai.com/docs/models/gpt-3-5) - AI model used to power the visa assistant chatbot.
+- [JSONBin.io](https://jsonbin.io/) - Cloud storage service for structured Visa Bulletin JSON data.
+- [Render](https://render.com/) - Cloud platform used to deploy the production application.
 
 ## **Acknowledgments** 
 Use anyone else's code? Inspired by a particular project? List / link here.  
