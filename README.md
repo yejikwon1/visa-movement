@@ -35,41 +35,41 @@ https://devpost.com/software/visa-movement?ref_content=my-projects-tab&ref_featu
  
  ### **Installation**
  **Step 1**: Clone the Project
-  git clone https://github.com/YOUR_USERNAME/visa-movement.git
-  cd visa-movement
+  - git clone https://github.com/YOUR_USERNAME/visa-movement.git
+  - cd visa-movement
 
  **Step 2**: Install Root Dependencies
-  npm install
+  - npm install
 
   **Step 3**: Install Frontend Dependencies
-  cd web
-  npm install
+  - cd web
+  - npm install
 
   **Step 4**: Install Backend Dependencies
-  cd ../backend
-  python3 -m pip install -r requirements.txt
+  - cd ../backend
+  - python3 -m pip install -r requirements.txt
 
   **Step 5**: Install Script Dependencies
-  cd ../scripts
-  python3 -m pip install -r requirements.txt
+  - cd ../scripts
+  - python3 -m pip install -r requirements.txt
 
   **Step 6**: Set Environment Variables
-  cd ../backend
-  touch .env
-  echo "OPENAI_API_KEY=---Redacted due to Privacy Issue—" > .env
+  - cd ../backend
+  - touch .env
+  - echo "OPENAI_API_KEY=---Redacted due to Privacy Issue—" > .env
 
   **Step 7**: Generate Forecast Data
-  cd ../web
-  node scripts/generateForecastWithCountries.js
+  - cd ../web
+  - node scripts/generateForecastWithCountries.js
 
   **Step 8**: Start Backend Server
-  cd ../backend
-  uvicorn main:app --reload --host 0.0.0.0 --port 8000
+  - cd ../backend
+  - uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
   **Step 9**: Start Frontend Server
-  Open a new terminal:
-  cd "/Your Directory/visa-movement/web"
-  npm start
+  - Open a new terminal:
+  - cd "/Your Directory/visa-movement/web"
+  - npm start
 
  
  ### **Deployment**
