@@ -30,8 +30,11 @@ https://devpost.com/software/visa-movement?ref_content=my-projects-tab&ref_featu
  The more detailed and the more accurate, the better. User-friendly instructions will entice prospective users (including judges) to engage more deeply with your project, which could improve your hackathon score.
  
  ### **Prerequisites** 
- What prerequisites must be installed in order to run your project, and how do you install them?
- Provide code samples in this fenced code block.
+Before starting, make sure you have:
+- Node.js (v16+): https://nodejs.org/
+- Python (v3.8+): https://www.python.org/downloads/
+- Git: https://git-scm.com/
+- OpenAI API Key: https://platform.openai.com/api-keys
  
  ### **Installation**
  **Step 1**: Clone the Project
