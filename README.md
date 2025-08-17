@@ -105,20 +105,6 @@ app.add_middleware(
 )
 ```
 
-#### Frontend (React) — Vercel
-1) New Project → Import GitHub repo → Set:
-- **Framework**: Create React App
-- **Root directory**: `web`
-- **Build command**: `npm run build`
-- **Output directory**: `build`
-
-2) Environment variables (if browser calls OpenAI directly):
-- `REACT_APP_OPENAI_API_KEY=sk-REPLACE_ME`
-
-3) Deploy, then open your URL:
-```bash
-open https://<your-frontend>.vercel.app
-```
 
 #### Frontend (React) — Render Static Site (alternative)
 1) Create Static Site:
