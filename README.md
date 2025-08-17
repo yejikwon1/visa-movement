@@ -34,10 +34,42 @@ https://devpost.com/software/visa-movement?ref_content=my-projects-tab&ref_featu
  Provide code samples in this fenced code block.
  
  ### **Installation**
- Give a step-by-step rundown of how to install your project.
+ **Step 1**: Clone the Project
+  git clone https://github.com/YOUR_USERNAME/visa-movement.git
+  cd visa-movement
 
- 
+ **Step 2**: Install Root Dependencies
+  npm install
 
+  **Step 3**: Install Frontend Dependencies
+  cd web
+  npm install
+
+  **Step 4**: Install Backend Dependencies
+  cd ../backend
+  python3 -m pip install -r requirements.txt
+
+  **Step 5**: Install Script Dependencies
+  cd ../scripts
+  python3 -m pip install -r requirements.txt
+
+  **Step 6**: Set Environment Variables
+  cd ../backend
+  touch .env
+  echo "OPENAI_API_KEY=---Redacted due to Privacy Issue—" > .env
+
+  **Step 7**: Generate Forecast Data
+  cd ../web
+  node scripts/generateForecastWithCountries.js
+
+  **Step 8**: Start Backend Server
+  cd ../backend
+  uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+  **Step 9**: Start Frontend Server
+  Open a new terminal:
+  cd "/Your Directory/visa-movement/web"
+  npm start
 
  
  ### **Deployment**
